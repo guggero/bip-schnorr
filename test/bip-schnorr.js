@@ -73,15 +73,47 @@ describe('test vectors', () => {
     const P3 = G.multiply(pk3);
     const P = P1.add(P2).add(P3);
 
-    it('can sign and verify aggregated signatures over same message', () => {
+    it('can sign and verify two aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
-      const sigSum2 = bipSchnorr.aggregateSignatures([pk1, pk2, pk3], m);
+      const signature = bipSchnorr.aggregateSignatures([pk1, pk2], m);
 
       // when
       let result = false;
       try {
-        bipSchnorr.verify(P.getEncoded(true), m, sigSum2);
+        bipSchnorr.verify(P1.add(P2).getEncoded(true), m, signature);
+        result = true;
+      } catch (e) {
+        result = false;
+      }
+      assert.strictEqual(result, true);
+    });
+
+    it('can sign and verify two more aggregated signatures over same message', () => {
+      // given
+      const m = Buffer.from(vec1.m, 'hex');
+      const signature = bipSchnorr.aggregateSignatures([pk2, pk3], m);
+
+      // when
+      let result = false;
+      try {
+        bipSchnorr.verify(P2.add(P3).getEncoded(true), m, signature);
+        result = true;
+      } catch (e) {
+        result = false;
+      }
+      assert.strictEqual(result, true);
+    });
+
+    it('can sign and verify three aggregated signatures over same message', () => {
+      // given
+      const m = Buffer.from(vec1.m, 'hex');
+      const signature = bipSchnorr.aggregateSignatures([pk1, pk2, pk3], m);
+
+      // when
+      let result = false;
+      try {
+        bipSchnorr.verify(P.getEncoded(true), m, signature);
         result = true;
       } catch (e) {
         result = false;
