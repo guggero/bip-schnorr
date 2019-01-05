@@ -61,7 +61,7 @@ describe('test vectors', () => {
       });
   });
 
-  describe('aggregate', () => {
+  describe('aggregate demo', () => {
     const vec1 = testVectors[1];
     const vec2 = testVectors[2];
     const vec3 = testVectors[3];

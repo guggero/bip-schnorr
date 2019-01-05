@@ -90,6 +90,8 @@ Verify a 64 byte signature of a 32 byte message against the public key. Throws a
 ### bipSchnorr.aggregateSignatures(privateKeys : BigInteger[], message : Buffer) : Buffer
 Aggregates multiple signatures of different private keys over the same message into a single 64 byte signature.
 
+**This is just a demo of how signature aggregation works with Schnorr, this is not part of any BIP yet!**
+
 ### bipSchnorr.pubKeyToPoint(pubKey : Buffer) : Point
 Returns the point on the `secp256k1` curve that corresponds to the given 33 byte public key.
 
