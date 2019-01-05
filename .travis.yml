@@ -1,0 +1,19 @@
+sudo: false
+language: node_js
+node_js:
+  - "8"
+  - "9"
+  - "10"
+matrix:
+  include:
+    - node_js: "8"
+      env: TEST_SUITE=coverage
+    - node_js: "8"
+      env: TEST_SUITE=coverage-coveralls
+    - node_js: "9"
+      env: TEST_SUITE=coverage
+    - node_js: "10"
+      env: TEST_SUITE=coverage
+env:
+  - TEST_SUITE=unit
+script: npm run-script $TEST_SUITE
