@@ -1,6 +1,6 @@
 {
   "name": "bip-schnorr",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Pure JavaScript implementation of the BIP schnorr signature scheme",
   "main": "./src/index.js",
   "engines": {

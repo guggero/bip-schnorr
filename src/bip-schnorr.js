@@ -8,7 +8,7 @@ const curve = ecurve.getCurveByName('secp256k1');
 const G = curve.G;
 const p = curve.p;
 const n = curve.n;
-const VERSION = 'v5';
+const VERSION = 'v0.0.3';
 
 function deterministicGetK0(privateKey, message) {
   if (!BigInteger.isBigInteger(privateKey)) {
