@@ -17,6 +17,12 @@ function deterministicGetK0(privateKey, message) {
   if (!Buffer.isBuffer(message)) {
     throw new Error('message must be a Buffer');
   }
+  if (message.length !== 32) {
+    throw new Error('message must be 32 bytes long');
+  }
+  if (privateKey.compareTo(BigInteger.ONE) < 0 || privateKey.compareTo(n.subtract(BigInteger.ONE)) > 0) {
+    throw new Error("the private key must be an integer in the range 1..n-1")
+  }
 
   const concat = Buffer.concat([intToBuffer(privateKey), message]);
   const h = hash(concat);
@@ -56,6 +62,12 @@ function verify(pubKey, message, signature) {
   }
   if (!Buffer.isBuffer(signature)) {
     throw new Error('signature must be a Buffer');
+  }
+  if (pubKey.length !== 33) {
+    throw new Error('public key must be 33 bytes long');
+  }
+  if (message.length !== 32) {
+    throw new Error('message must be 32 bytes long');
   }
   if (signature.length !== 64) {
     throw new Error('signature must be 64 bytes long');
