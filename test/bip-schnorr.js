@@ -4,21 +4,24 @@ const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
 const bipSchnorr = require('../src/bip-schnorr');
+const randomBytes = require('random-bytes');
 
 const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const G = curve.G;
-const p = curve.p;
 const n = curve.n;
 
 const testVectors = require('./test-vectors.json');
+
+const NUM_RANDOM_TESTS = 64;
+const RANDOM_TEST_TIMEOUT = 20000;
 
 describe('test vectors', () => {
   describe('sign', () => {
     testVectors
       .filter(vec => vec.d !== null)
       .forEach(vec => {
-        it('sign ' + vec.d, () => {
+        it('can sign ' + vec.d, () => {
           // given
           const d = BigInteger.fromHex(vec.d);
           const m = Buffer.from(vec.m, 'hex');
@@ -35,7 +38,7 @@ describe('test vectors', () => {
   describe('verify', () => {
     testVectors
       .forEach(vec => {
-        it('verify ' + (vec.comment || vec.d), () => {
+        it('can verify ' + (vec.comment || vec.d), () => {
           // given
           const pk = Buffer.from(vec.pk, 'hex');
           const m = Buffer.from(vec.m, 'hex');
@@ -59,24 +62,139 @@ describe('test vectors', () => {
           }
         });
       });
+
+    it('can verify ' + NUM_RANDOM_TESTS + ' random messages with random keys', (done) => {
+      // given
+      const privateKeys = [];
+      const pubKeys = [];
+      const messages = [];
+      for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
+        const d = BigInteger.fromBuffer(Buffer.from(randomBytes.sync(32))).mod(n);
+        const pubKey = G.multiply(d).getEncoded(true);
+        const message = Buffer.from(randomBytes.sync(32));
+        privateKeys.push(d);
+        pubKeys.push(pubKey);
+        messages.push(message);
+      }
+
+      // when / then
+      for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
+        let result = true;
+        let error = null;
+        const signature = bipSchnorr.sign(privateKeys[i], messages[i]);
+        try {
+          bipSchnorr.verify(pubKeys[i], messages[i], signature);
+        } catch (e) {
+          result = false;
+          error = e;
+        }
+
+        // then
+        assert.strictEqual(result, true, error);
+        assert.strictEqual(error, null);
+      }
+      done();
+    }).timeout(RANDOM_TEST_TIMEOUT);
+  });
+
+  describe('batchVerify', () => {
+    it('can batch verify all positive test cases', () => {
+      // given
+      const positiveVectors = testVectors.filter(vec => vec.result);
+      const pubKeys = positiveVectors.map(vec => Buffer.from(vec.pk, 'hex'));
+      const messages = positiveVectors.map(vec => Buffer.from(vec.m, 'hex'));
+      const signatures = positiveVectors.map(vec => Buffer.from(vec.sig, 'hex'));
+
+      // when
+      let result = true;
+      let error = null;
+      try {
+        bipSchnorr.batchVerify(pubKeys, messages, signatures);
+      } catch (e) {
+        result = false;
+        error = e;
+      }
+
+      // then
+      assert.strictEqual(result, true, error);
+      assert.strictEqual(error, null);
+    });
+
+    it('can batch verify ' + NUM_RANDOM_TESTS + ' random messages and signatures', (done) => {
+      // given
+      const pubKeys = [];
+      const messages = [];
+      const signatures = [];
+      for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
+        const d = BigInteger.fromBuffer(Buffer.from(randomBytes.sync(32))).mod(n);
+        const pubKey = G.multiply(d).getEncoded(true);
+        const message = Buffer.from(randomBytes.sync(32));
+        const signature = bipSchnorr.sign(d, message);
+        pubKeys.push(pubKey);
+        messages.push(message);
+        signatures.push(signature);
+      }
+
+      // when
+      let result = true;
+      let error = null;
+      try {
+        bipSchnorr.batchVerify(pubKeys, messages, signatures);
+      } catch (e) {
+        result = false;
+        error = e;
+      }
+
+      // then
+      assert.strictEqual(result, true, error);
+      assert.strictEqual(error, null);
+      done();
+    }).timeout(RANDOM_TEST_TIMEOUT);
+
+    it('fails on one invalid signature', () => {
+      // given
+      const positiveVectors = testVectors.filter(vec => vec.result);
+      const pubKeys = positiveVectors.map(vec => Buffer.from(vec.pk, 'hex'));
+      const messages = positiveVectors.map(vec => Buffer.from(vec.m, 'hex'));
+      const signatures = positiveVectors.map(vec => Buffer.from(vec.sig, 'hex'));
+      const nagativeVector = testVectors.filter(vec => !vec.result)[0];
+      pubKeys.push(Buffer.from(nagativeVector.pk, 'hex'));
+      messages.push(Buffer.from(nagativeVector.m, 'hex'));
+      signatures.push(Buffer.from(nagativeVector.sig, 'hex'));
+
+      // when
+      let result = true;
+      let error = null;
+      try {
+        bipSchnorr.batchVerify(pubKeys, messages, signatures);
+      } catch (e) {
+        result = false;
+        error = e;
+      }
+
+      // then
+      assert.strictEqual(result, false, error);
+      assert.strictEqual(error.message, 'signature verification failed');
+    });
   });
 
   describe('aggregate demo', () => {
-    const vec1 = testVectors[1];
-    const vec2 = testVectors[2];
-    const vec3 = testVectors[3];
-    const pk1 = BigInteger.fromHex(vec1.d);
-    const pk2 = BigInteger.fromHex(vec2.d);
-    const pk3 = BigInteger.fromHex(vec3.d);
-    const P1 = G.multiply(pk1);
-    const P2 = G.multiply(pk2);
-    const P3 = G.multiply(pk3);
+    const vectorsWithPrivateKeys = testVectors
+      .filter(vec => vec.d !== null)
+      .filter(vec => BigInteger.fromHex(vec.d).compareTo(BigInteger.ONE) > 0);
+    const vec1 = vectorsWithPrivateKeys[0];
+    const d1 = BigInteger.fromHex(vectorsWithPrivateKeys[0].d);
+    const d2 = BigInteger.fromHex(vectorsWithPrivateKeys[1].d);
+    const d3 = BigInteger.fromHex(vectorsWithPrivateKeys[2].d);
+    const P1 = G.multiply(d1);
+    const P2 = G.multiply(d2);
+    const P3 = G.multiply(d3);
     const P = P1.add(P2).add(P3);
 
     it('can sign and verify two aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
-      const signature = bipSchnorr.aggregateSignatures([pk1, pk2], m);
+      const signature = bipSchnorr.aggregateSignatures([d1, d2], m);
 
       // when
       let result = false;
@@ -93,7 +211,7 @@ describe('test vectors', () => {
     it('can sign and verify two more aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
-      const signature = bipSchnorr.aggregateSignatures([pk2, pk3], m);
+      const signature = bipSchnorr.aggregateSignatures([d2, d3], m);
 
       // when
       let result = false;
@@ -109,7 +227,7 @@ describe('test vectors', () => {
     it('can sign and verify three aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
-      const signature = bipSchnorr.aggregateSignatures([pk1, pk2, pk3], m);
+      const signature = bipSchnorr.aggregateSignatures([d1, d2, d3], m);
 
       // when
       let result = false;
