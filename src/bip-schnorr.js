@@ -2,7 +2,6 @@ const BigInteger = require('bigi');
 const Buffer = require('safe-buffer').Buffer;
 const ecurve = require('ecurve');
 const sha256 = require('js-sha256');
-const jacobi = require('./jacobi');
 const randomBytes = require('random-bytes');
 
 const curve = ecurve.getCurveByName('secp256k1');
@@ -10,6 +9,12 @@ const G = curve.G;
 const p = curve.p;
 const n = curve.n;
 const VERSION = 'v0.0.4';
+const zero = BigInteger.ZERO;
+const one = BigInteger.ONE;
+const two = BigInteger.valueOf(2);
+const three = BigInteger.valueOf(3);
+const four = BigInteger.valueOf(4);
+const seven = BigInteger.valueOf(7);
 
 function sign(privateKey, message) {
   // https://github.com/sipa/bips/blob/bip-schnorr/bip-schnorr.mediawiki#signing
@@ -39,53 +44,46 @@ function verify(pubKey, message, signature) {
   const sG = G.multiply(s);
   const eP = P.multiply(e);
   const R = sG.add(eP.negate());
-  if (curve.isInfinity(R) || jacobi(R.affineY, p) !== 1 || !R.affineX.equals(r)) {
+  if (curve.isInfinity(R) || jacobi(R.affineY) !== 1 || !R.affineX.equals(r)) {
     throw new Error('signature verification failed');
   }
 }
 
 function batchVerify(pubKeys, messages, signatures) {
   checkBatchVerifyParams(pubKeys, messages, signatures);
-  const one = BigInteger.ONE;
-  const two = BigInteger.valueOf(2);
-  const three = BigInteger.valueOf(3);
-  const four = BigInteger.valueOf(4);
-  const seven = BigInteger.valueOf(7);
 
   // https://github.com/sipa/bips/blob/bip-schnorr/bip-schnorr.mediawiki#Batch_Verification
-  const a = [];
-  const s = [];
-  const P = [];
-  const e = [];
-  const R = [];
-  const ae = [];
+  let leftSide = zero;
+  let rightSide = null;
   for (let i = 0; i < pubKeys.length; i++) {
-    P[i] = pubKeyToPoint(pubKeys[i]);
+    const P = pubKeyToPoint(pubKeys[i]);
     const r = bufferToInt(signatures[i].slice(0, 32));
     if (r.compareTo(p) >= 0) {
       throw new Error('r is larger than or equal to field size');
     }
-    s[i] = bufferToInt(signatures[i].slice(32, 64));
-    if (s[i].compareTo(n) >= 0) {
+    const s = bufferToInt(signatures[i].slice(32, 64));
+    if (s.compareTo(n) >= 0) {
       throw new Error('s is larger than or equal to curve order');
     }
-    e[i] = bufferToInt(hash(Buffer.concat([intToBuffer(r), pointToBuffer(P[i]), messages[i]]))).mod(n);
+    const e = getE(intToBuffer(r), P, messages[i]);
     const c = r.pow(three).add(seven).mod(p);
     const y = c.modPow(p.add(one).divide(four), p);
     if (c.compareTo(y.modPow(two, p)) !== 0) {
       throw new Error('c is not equal to y^2');
     }
-    R[i] = ecurve.Point.fromAffine(curve, r, y);
+    const R = ecurve.Point.fromAffine(curve, r, y);
+
+    if (i === 0) {
+      leftSide = leftSide.add(s);
+      rightSide = R.add(P.multiply(e));
+    } else {
+      const a = randomA();
+      leftSide = leftSide.add(a.multiply(s));
+      rightSide = rightSide.add(R.multiply(a)).add(P.multiply(a.multiply(e)));
+    }
   }
 
-  for (let i = 0; i < pubKeys.length; i++) {
-    a[i] = i === 0 ? one : randomA();
-    ae[i] = a[i].multiply(e[i]);
-  }
-  const sa = skalarSum(s, a).mod(n);
-  const aR = pointSum(R.map((Ri, i) => Ri.multiply(a[i])));
-  const aeP = pointSum(P.map((Pi, i) => Pi.multiply(ae[i])));
-  if (!G.multiply(sa).equals(aR.add(aeP))) {
+  if (!G.multiply(leftSide.mod(n)).equals(rightSide)) {
     throw new Error('signature verification failed');
   }
 }
@@ -114,7 +112,7 @@ function aggregateSignatures(privateKeys, message) {
   }
   const rX = intToBuffer(R.affineX);
   let e = getE(rX, P, message);
-  let s = BigInteger.ZERO;
+  let s = zero;
   for (let i = 0; i < k0s.length; i++) {
     s = s.add(getK(Rs[i], k0s[i]).add(e.multiply(privateKeys[i]))).mod(n);
   }
@@ -143,24 +141,12 @@ function deterministicGetK0(privateKey, message) {
   return k0;
 }
 
-function skalarSum(s, a) {
-  let sum = BigInteger.ZERO;
-  for (let i = 0; i < s.length; i++) {
-    sum = sum.add(a[i].multiply(s[i]));
-  }
-  return sum;
-}
-
-function pointSum(points) {
-  let sum = points[0];
-  for (let i = 1; i < points.length; i++) {
-    sum = sum.add(points[i]);
-  }
-  return sum;
+function jacobi(num) {
+  return num.modPow(p.subtract(one).divide(two), p).intValue();
 }
 
 function getK(R, k0) {
-  return jacobi(R.affineY, p) === 1 ? k0 : n.subtract(k0);
+  return jacobi(R.affineY) === 1 ? k0 : n.subtract(k0);
 }
 
 function getE(rX, P, m) {
@@ -208,7 +194,7 @@ function checkBatchVerifyParams(pubKeys, messages, signatures) {
 }
 
 function checkRange(privateKey) {
-  if (privateKey.compareTo(BigInteger.ONE) < 0 || privateKey.compareTo(n.subtract(BigInteger.ONE)) > 0) {
+  if (privateKey.compareTo(one) < 0 || privateKey.compareTo(n.subtract(one)) > 0) {
     throw new Error("privateKey must be an integer in the range 1..n-1")
   }
 }
@@ -234,7 +220,7 @@ function pubKeyToPoint(pubKey) {
     throw new Error('pubKey must be 33 bytes long');
   }
   const pubKeyEven = (pubKey[0] - 0x02) === 0;
-  const x = BigInteger.fromBuffer(pubKey.slice(1, 33));
+  const x = bufferToInt(pubKey.slice(1, 33));
   const P = curve.pointFromX(!pubKeyEven, x);
   if (curve.isInfinity(P)) {
     throw new Error('point is at infinity');
