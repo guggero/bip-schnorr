@@ -8,7 +8,7 @@ const curve = ecurve.getCurveByName('secp256k1');
 const G = curve.G;
 const p = curve.p;
 const n = curve.n;
-const VERSION = 'v0.0.4';
+const VERSION = 'v0.1.0';
 const zero = BigInteger.ZERO;
 const one = BigInteger.ONE;
 const two = BigInteger.valueOf(2);
@@ -93,7 +93,6 @@ function aggregateSignatures(privateKeys, message) {
     throw new Error('privateKeys must be an array with one or more elements');
   }
   const k0s = [];
-  const Rs = [];
   let P = null;
   let R = null;
   for (let privateKey of privateKeys) {
@@ -101,7 +100,6 @@ function aggregateSignatures(privateKeys, message) {
     const Ri = G.multiply(k0i);
     const Pi = G.multiply(privateKey);
     k0s.push(k0i);
-    Rs.push(Ri);
     if (R === null) {
       R = Ri;
       P = Pi;
@@ -114,9 +112,10 @@ function aggregateSignatures(privateKeys, message) {
   let e = getE(rX, P, message);
   let s = zero;
   for (let i = 0; i < k0s.length; i++) {
-    s = s.add(getK(Rs[i], k0s[i]).add(e.multiply(privateKeys[i]))).mod(n);
+    const k = getK(R, k0s[i]);
+    s = s.add(k.add(e.multiply(privateKeys[i])));
   }
-  return Buffer.concat([rX, intToBuffer(s)]);
+  return Buffer.concat([rX, intToBuffer(s.mod(n))]);
 }
 
 function deterministicGetK0(privateKey, message) {
@@ -195,7 +194,7 @@ function checkBatchVerifyParams(pubKeys, messages, signatures) {
 
 function checkRange(privateKey) {
   if (privateKey.compareTo(one) < 0 || privateKey.compareTo(n.subtract(one)) > 0) {
-    throw new Error("privateKey must be an integer in the range 1..n-1")
+    throw new Error('privateKey must be an integer in the range 1..n-1')
   }
 }
 
@@ -234,7 +233,7 @@ function pubKeyToPoint(pubKey) {
 
 function randomA() {
   let a = null;
-  for (;;) {
+  for (; ;) {
     a = bufferToInt(Buffer.from(randomBytes.sync(32)));
     try {
       checkRange(a);

@@ -83,13 +83,9 @@ try {
 } catch (e) {
   console.error('The signature verification failed: ' + e);
 }
-```
 
-Apparently my code has one or more bugs and signature aggregation only works sometimes!
-Please wait for [issue #3](https://github.com/guggero/bip-schnorr/issues/3) to be resolved before using signature aggregation!
-```javascript
 // aggregating signatures (not part of BIP!)
-/* const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
+const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
 const privateKey2 = BigInteger.fromHex('C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7');
 const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
 const aggregatedSignature = bipSchnorr.aggregateSignatures([privateKey1, privateKey2], message);
@@ -104,7 +100,6 @@ try {
 } catch (e) {
   console.error('The signature verification failed: ' + e);
 }
-*/
 ```
 
 ## API
@@ -117,6 +112,9 @@ Verify a 64-byte signature of a 32-byte message against the public key. Throws a
 
 ### bipSchnorr.batchVerify(pubKeys : Buffer[], messages : Buffer[], signatures : Buffer[]) : void
 Verify a list of 64-byte signatures as a batch operation. Throws an `Error` if verification fails.
+
+### bipSchnorr.aggregateSignatures(privateKeys : BigInteger[], message : Buffer) : Buffer
+Aggregates multiple signatures of different private keys over the same message into a single 64-byte signature.
 
 ### bipSchnorr.pubKeyToPoint(pubKey : Buffer) : Point
 Returns the point on the `secp256k1` curve that corresponds to the given 33-byte public key.

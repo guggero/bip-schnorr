@@ -178,7 +178,7 @@ describe('test vectors', () => {
     });
   });
 
-  describe('aggregate demo', () => {
+  describe('aggregateSignatures', () => {
     const vectorsWithPrivateKeys = testVectors
       .filter(vec => vec.d !== null)
       .filter(vec => BigInteger.fromHex(vec.d).compareTo(BigInteger.ONE) > 0);
@@ -207,7 +207,6 @@ describe('test vectors', () => {
       assert.strictEqual(result, true);
     });
 
-    /*TODO: fix
     it('can sign and verify two more aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
@@ -238,7 +237,70 @@ describe('test vectors', () => {
         result = false;
       }
       assert.strictEqual(result, true);
-    });*/
+    });
+
+    for (let i = 1; i <= NUM_RANDOM_TESTS / 2; i++) {
+      it('can aggregate signatures of two random private keys over same message, run #' + i, () => {
+        // given
+        const d1 = BigInteger.fromBuffer(Buffer.from(randomBytes.sync(32))).mod(n);
+        const d2 = BigInteger.fromBuffer(Buffer.from(randomBytes.sync(32))).mod(n);
+        const pubKey1 = G.multiply(d1);
+        const pubKey2 = G.multiply(d2);
+        const message = Buffer.from(randomBytes.sync(32));
+        const signature = bipSchnorr.aggregateSignatures([d1, d2], message);
+
+        // when
+        let result = true;
+        let error = null;
+        try {
+          bipSchnorr.verify(pubKey1.add(pubKey2).getEncoded(true), message, signature);
+        } catch (e) {
+          result = false;
+          error = e;
+        }
+
+        // then
+        assert.strictEqual(result, true, error);
+        assert.strictEqual(error, null);
+      });
+    }
+
+    for (let i = 1; i <= NUM_RANDOM_TESTS / 8; i++) {
+      const message = Buffer.from(randomBytes.sync(32));
+
+      it('can aggregate signatures of ' + NUM_RANDOM_TESTS + ' random private keys over the same message, run #' + i, (done) => {
+        // given
+        const privateKeys = [];
+        let sumPubKey = null;
+        for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
+          const d = BigInteger.fromBuffer(Buffer.from(randomBytes.sync(32))).mod(n);
+          const P = G.multiply(d);
+          if (i === 0) {
+            sumPubKey = P;
+          } else {
+            sumPubKey = sumPubKey.add(P);
+          }
+          privateKeys.push(d);
+        }
+        const signature = bipSchnorr.aggregateSignatures(privateKeys, message);
+
+        // when
+        let result = true;
+        let error = null;
+        try {
+          bipSchnorr.verify(sumPubKey.getEncoded(true), message, signature);
+        } catch (e) {
+          result = false;
+          error = e;
+        }
+
+        // then
+        assert.strictEqual(result, true, error);
+        assert.strictEqual(error, null);
+
+        done();
+      }).timeout(RANDOM_TEST_TIMEOUT);
+    }
 
     it('can aggregate and verify example in README', () => {
       const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
