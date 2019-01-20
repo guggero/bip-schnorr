@@ -126,7 +126,7 @@ The code is not yet optimized for performance.
 The following results were achieved on an Intel Core i7-6500U running on linux/amd64 with node v10.15.0:
 
 ```text
-$ node test/bip-schnorr-benchmark.js
+$ node test/schnorr.benchmark.js
 Sign (batch size: 1) x 29.70 ops/sec ±3.19% (53 runs sampled) 35769 us/op 28 sig/s
 Sign (batch size: 2) x 15.20 ops/sec ±0.58% (42 runs sampled) 67754 us/op 30 sig/s
 Sign (batch size: 4) x 7.63 ops/sec ±1.53% (23 runs sampled) 132366 us/op 30 sig/s
