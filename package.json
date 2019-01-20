@@ -14,7 +14,7 @@
     "authenticated-encryption"
   ],
   "scripts": {
-    "coverage-coveralls": "nyc mocha && nyc report --reporter=text-lcov | coveralls",
+    "coverage-coveralls": "nyc mocha ./test/schnorr-*.spec.js && nyc report --reporter=text-lcov | coveralls",
     "coverage-html": "nyc report --reporter=html",
     "coverage": "nyc --check-coverage --branches 85 --functions 90 --lines 90 mocha ./test/schnorr-*.spec.js",
     "unit": "mocha ./test/schnorr-*.spec.js",
