@@ -119,7 +119,7 @@ Aggregates multiple signatures of different private keys over the same message i
 ### bipSchnorr.pubKeyToPoint(pubKey : Buffer) : Point
 Returns the point on the `secp256k1` curve that corresponds to the given 33-byte public key.
 
-## Implementations in different langauges
+## Implementations in different languages
 * [Go implementation](https://github.com/hbakhtiyor/schnorr/)
 
 ## Performance
