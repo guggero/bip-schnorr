@@ -122,3 +122,38 @@ Returns the point on the `secp256k1` curve that corresponds to the given 33-byte
 ## Performance
 
 The code is not yet optimized for performance.
+
+The following results were achieved on an Intel Core i7-6500U running on linux/amd64 with node v10.15.0:
+
+```text
+$ node test/bip-schnorr-benchmark.js
+Sign (batch size: 1) x 29.70 ops/sec ±3.19% (53 runs sampled) 35769 us/op 28 sig/s
+Sign (batch size: 2) x 15.20 ops/sec ±0.58% (42 runs sampled) 67754 us/op 30 sig/s
+Sign (batch size: 4) x 7.63 ops/sec ±1.53% (23 runs sampled) 132366 us/op 30 sig/s
+Sign (batch size: 8) x 3.87 ops/sec ±0.59% (14 runs sampled) 259093 us/op 31 sig/s
+Sign (batch size: 16) x 1.96 ops/sec ±0.54% (9 runs sampled) 514358 us/op 31 sig/s
+Sign (batch size: 32) x 0.95 ops/sec ±1.99% (7 runs sampled) 1051411 us/op 30 sig/s
+Sign (batch size: 64) x 0.45 ops/sec ±5.08% (6 runs sampled) 2385445 us/op 27 sig/s
+Verify (batch size: 1) x 30.09 ops/sec ±0.38% (53 runs sampled) 34477 us/op 29 sig/s
+Verify (batch size: 2) x 15.02 ops/sec ±1.22% (41 runs sampled) 68379 us/op 29 sig/s
+Verify (batch size: 4) x 7.37 ops/sec ±3.05% (23 runs sampled) 136874 us/op 29 sig/s
+Verify (batch size: 8) x 3.79 ops/sec ±0.57% (14 runs sampled) 267222 us/op 30 sig/s
+Verify (batch size: 16) x 1.89 ops/sec ±1.06% (9 runs sampled) 529846 us/op 30 sig/s
+Verify (batch size: 32) x 0.95 ops/sec ±0.92% (7 runs sampled) 1051658 us/op 30 sig/s
+Verify (batch size: 64) x 0.47 ops/sec ±0.77% (6 runs sampled) 2135796 us/op 30 sig/s
+Batch Verify (batch size: 1) x 30.01 ops/sec ±1.29% (53 runs sampled) 34421 us/op 29 sig/s
+Batch Verify (batch size: 2) x 12.14 ops/sec ±0.43% (34 runs sampled) 84276 us/op 24 sig/s
+Batch Verify (batch size: 4) x 5.54 ops/sec ±0.65% (18 runs sampled) 181663 us/op 22 sig/s
+Batch Verify (batch size: 8) x 2.66 ops/sec ±0.72% (11 runs sampled) 379037 us/op 21 sig/s
+Batch Verify (batch size: 16) x 1.28 ops/sec ±3.25% (8 runs sampled) 780231 us/op 21 sig/s
+Batch Verify (batch size: 32) x 0.64 ops/sec ±0.63% (6 runs sampled) 1557873 us/op 21 sig/s
+Batch Verify (batch size: 64) x 0.32 ops/sec ±0.58% (5 runs sampled) 3145214 us/op 20 sig/s
+Aggregate Signatures (batch size: 1) x 29.63 ops/sec ±1.14% (52 runs sampled) 34873 us/op 29 sig/s
+Aggregate Signatures (batch size: 2) x 15.49 ops/sec ±0.83% (42 runs sampled) 66014 us/op 30 sig/s
+Aggregate Signatures (batch size: 4) x 7.69 ops/sec ±0.61% (23 runs sampled) 132555 us/op 30 sig/s
+Aggregate Signatures (batch size: 8) x 3.83 ops/sec ±1.08% (14 runs sampled) 262249 us/op 31 sig/s
+Aggregate Signatures (batch size: 16) x 1.94 ops/sec ±0.68% (9 runs sampled) 518440 us/op 31 sig/s
+Aggregate Signatures (batch size: 32) x 0.96 ops/sec ±0.30% (7 runs sampled) 1038215 us/op 31 sig/s
+Aggregate Signatures (batch size: 64) x 0.48 ops/sec ±0.61% (6 runs sampled) 2092208 us/op 31 sig/s
+Done in 333.35s.
+```
