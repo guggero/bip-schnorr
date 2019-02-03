@@ -62,9 +62,20 @@ function checkSignatureInput(r, s) {
   }
 }
 
+function checkPointExists(pubKeyEven, P) {
+  if (curve.isInfinity(P)) {
+    throw new Error('point is at infinity');
+  }
+  const pEven = P.affineY.isEven();
+  if (pubKeyEven !== pEven) {
+    throw new Error('point does not exist');
+  }
+}
+
 module.exports = {
   checkVerifyParams,
   checkBatchVerifyParams,
   checkRange,
   checkSignatureInput,
+  checkPointExists,
 };

@@ -3,6 +3,7 @@ const Buffer = require('safe-buffer').Buffer;
 const sha256 = require('js-sha256');
 const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
+const check = require('./check');
 
 function bufferToInt(buffer) {
   return BigInteger.fromBuffer(buffer);
@@ -21,19 +22,10 @@ function pointToBuffer(point) {
 }
 
 function pubKeyToPoint(pubKey) {
-  if (pubKey.length !== 33) {
-    throw new Error('pubKey must be 33 bytes long');
-  }
   const pubKeyEven = (pubKey[0] - 0x02) === 0;
   const x = bufferToInt(pubKey.slice(1, 33));
   const P = curve.pointFromX(!pubKeyEven, x);
-  if (curve.isInfinity(P)) {
-    throw new Error('point is at infinity');
-  }
-  const pEven = P.affineY.isEven();
-  if (pubKeyEven !== pEven) {
-    throw new Error('point does not exist');
-  }
+  check.checkPointExists(pubKeyEven, P);
   return P;
 }
 
