@@ -6,7 +6,6 @@ const bipSchnorr = require('../src/bip-schnorr');
 const ecurve = require('ecurve');
 
 const curve = ecurve.getCurveByName('secp256k1');
-const G = curve.G;
 const n = curve.n;
 
 const testVectors = require('./test-vectors.json');
@@ -59,9 +58,19 @@ describe('edge cases', () => {
     });
   });
 
-  describe('aggregateSignatures', () => {
+  describe('naiveKeyAggregation', () => {
     it('can check parameters', () => {
+      // when / then
+      try { bipSchnorr.naiveKeyAggregation(null, m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
+      try { bipSchnorr.naiveKeyAggregation([], m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
+    });
+  });
 
+  describe('muSigNonInteractive', () => {
+    it('can check parameters', () => {
+      // when / then
+      try { bipSchnorr.muSigNonInteractive(null, m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
+      try { bipSchnorr.muSigNonInteractive([], m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
     });
   });
 });

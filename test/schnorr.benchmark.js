@@ -61,7 +61,7 @@ function benchmarkBatchVerify(size, publicKeys, messages, signatures) {
 function benchmarkAggregateSignatures(size, privateKeys, messages) {
   return function () {
     try {
-      const result = bipSchnorr.aggregateSignatures(privateKeys, messages[0]);
+      const result = bipSchnorr.naiveKeyAggregation(privateKeys, messages[0]);
       if (!result || result.length !== 64) {
         console.error('Aggregating signatures failed!');
       }

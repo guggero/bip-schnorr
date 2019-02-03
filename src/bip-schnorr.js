@@ -1,14 +1,15 @@
 const BigInteger = require('bigi');
 const Buffer = require('safe-buffer').Buffer;
 const ecurve = require('ecurve');
-const sha256 = require('js-sha256');
 const randomBytes = require('random-bytes');
-
 const curve = ecurve.getCurveByName('secp256k1');
+const check = require('./check');
+const convert = require('./convert');
+
+const concat = Buffer.concat;
 const G = curve.G;
 const p = curve.p;
 const n = curve.n;
-const VERSION = 'v0.1.1';
 const zero = BigInteger.ZERO;
 const one = BigInteger.ONE;
 const two = BigInteger.valueOf(2);
@@ -22,25 +23,20 @@ function sign(privateKey, message) {
   const R = G.multiply(k0);
   const k = getK(R, k0);
   const P = G.multiply(privateKey);
-  const rX = intToBuffer(R.affineX);
-  const e = getE(rX, P, message);
-  return Buffer.concat([rX, intToBuffer(k.add(e.multiply(privateKey)).mod(n))]);
+  const Rx = convert.intToBuffer(R.affineX);
+  const e = getE(Rx, P, message);
+  return concat([Rx, convert.intToBuffer(k.add(e.multiply(privateKey)).mod(n))]);
 }
 
 function verify(pubKey, message, signature) {
-  checkVerifyParams(pubKey, message, signature);
+  check.checkVerifyParams(pubKey, message, signature);
 
   // https://github.com/sipa/bips/blob/bip-schnorr/bip-schnorr.mediawiki#verification
-  const P = pubKeyToPoint(pubKey);
-  const r = bufferToInt(signature.slice(0, 32));
-  if (r.compareTo(p) >= 0) {
-    throw new Error('r is larger than or equal to field size');
-  }
-  const s = bufferToInt(signature.slice(32, 64));
-  if (s.compareTo(n) >= 0) {
-    throw new Error('s is larger than or equal to curve order');
-  }
-  const e = bufferToInt(hash(Buffer.concat([intToBuffer(r), pointToBuffer(P), message]))).mod(n);
+  const P = convert.pubKeyToPoint(pubKey);
+  const r = convert.bufferToInt(signature.slice(0, 32));
+  const s = convert.bufferToInt(signature.slice(32, 64));
+  check.checkSignatureInput(r, s);
+  const e = convert.bufferToInt(convert.hash(concat([convert.intToBuffer(r), convert.pointToBuffer(P), message]))).mod(n);
   const sG = G.multiply(s);
   const eP = P.multiply(e);
   const R = sG.add(eP.negate());
@@ -50,22 +46,17 @@ function verify(pubKey, message, signature) {
 }
 
 function batchVerify(pubKeys, messages, signatures) {
-  checkBatchVerifyParams(pubKeys, messages, signatures);
+  check.checkBatchVerifyParams(pubKeys, messages, signatures);
 
   // https://github.com/sipa/bips/blob/bip-schnorr/bip-schnorr.mediawiki#Batch_Verification
   let leftSide = zero;
   let rightSide = null;
   for (let i = 0; i < pubKeys.length; i++) {
-    const P = pubKeyToPoint(pubKeys[i]);
-    const r = bufferToInt(signatures[i].slice(0, 32));
-    if (r.compareTo(p) >= 0) {
-      throw new Error('r is larger than or equal to field size');
-    }
-    const s = bufferToInt(signatures[i].slice(32, 64));
-    if (s.compareTo(n) >= 0) {
-      throw new Error('s is larger than or equal to curve order');
-    }
-    const e = getE(intToBuffer(r), P, messages[i]);
+    const P = convert.pubKeyToPoint(pubKeys[i]);
+    const r = convert.bufferToInt(signatures[i].slice(0, 32));
+    const s = convert.bufferToInt(signatures[i].slice(32, 64));
+    check.checkSignatureInput(r, s);
+    const e = getE(convert.intToBuffer(r), P, messages[i]);
     const c = r.pow(three).add(seven).mod(p);
     const y = c.modPow(p.add(one).divide(four), p);
     if (c.compareTo(y.modPow(two, p)) !== 0) {
@@ -88,7 +79,7 @@ function batchVerify(pubKeys, messages, signatures) {
   }
 }
 
-function aggregateSignatures(privateKeys, message) {
+function naiveKeyAggregation(privateKeys, message) {
   if (!privateKeys || !privateKeys.length) {
     throw new Error('privateKeys must be an array with one or more elements');
   }
@@ -108,14 +99,59 @@ function aggregateSignatures(privateKeys, message) {
       P = P.add(Pi);
     }
   }
-  const rX = intToBuffer(R.affineX);
-  let e = getE(rX, P, message);
+  const Rx = convert.intToBuffer(R.affineX);
+  let e = getE(Rx, P, message);
   let s = zero;
   for (let i = 0; i < k0s.length; i++) {
     const k = getK(R, k0s[i]);
     s = s.add(k.add(e.multiply(privateKeys[i])));
   }
-  return Buffer.concat([rX, intToBuffer(s.mod(n))]);
+  return concat([Rx, convert.intToBuffer(s.mod(n))]);
+}
+
+function muSigNonInteractive(privateKeys, message) {
+  if (!privateKeys || !privateKeys.length) {
+    throw new Error('privateKeys must be an array with one or more elements');
+  }
+
+  // https://blockstream.com/2018/01/23/musig-key-aggregation-schnorr-signatures/
+  const rs = [];
+  const Xs = [];
+  let R = null;
+  for (let privateKey of privateKeys) {
+    const ri = deterministicGetK0(privateKey, message);
+    const Ri = G.multiply(ri);
+    const Xi = G.multiply(privateKey);
+    rs.push(ri);
+    Xs.push(Xi);
+    if (R === null) {
+      R = Ri;
+    } else {
+      R = R.add(Ri);
+    }
+  }
+  const L = convert.hash(concat(Xs.map(convert.pointToBuffer)));
+  const as = [];
+  let X = null;
+  for (let Xi of Xs) {
+    const a = convert.bufferToInt(convert.hash(concat([L, convert.pointToBuffer(Xi)])));
+    const summand = Xi.multiply(a);
+    as.push(a);
+    if (X === null) {
+      X = summand;
+    } else {
+      X = X.add(summand);
+    }
+  }
+
+  let Rx = convert.intToBuffer(R.affineX);
+  let e = getE(Rx, X, message);
+  let s = zero;
+  for (let i = 0; i < rs.length; i++) {
+    const ri = getK(R, rs[i]);
+    s = s.add(ri.add(e.multiply(as[i]).multiply(privateKeys[i])).mod(n));
+  }
+  return concat([Rx, convert.intToBuffer(s.mod(n))]);
 }
 
 function deterministicGetK0(privateKey, message) {
@@ -128,11 +164,10 @@ function deterministicGetK0(privateKey, message) {
   if (message.length !== 32) {
     throw new Error('message must be 32 bytes long');
   }
-  checkRange(privateKey);
+  check.checkRange(privateKey);
 
-  const concat = Buffer.concat([intToBuffer(privateKey), message]);
-  const h = hash(concat);
-  const i = bufferToInt(h);
+  const h = convert.hash(concat([convert.intToBuffer(privateKey), message]));
+  const i = convert.bufferToInt(h);
   const k0 = i.mod(n);
   if (k0.signum() === 0) {
     throw new Error('k0 is zero');
@@ -148,95 +183,16 @@ function getK(R, k0) {
   return jacobi(R.affineY) === 1 ? k0 : n.subtract(k0);
 }
 
-function getE(rX, P, m) {
-  return bufferToInt(hash(Buffer.concat([rX, pointToBuffer(P), m]))).mod(n);
-}
-
-function checkVerifyParams(pubKey, message, signature, idx) {
-  const idxStr = (idx !== undefined ? '[' + idx + ']' : '');
-  if (!Buffer.isBuffer(pubKey)) {
-    throw new Error('pubKey' + idxStr + ' must be a Buffer');
-  }
-  if (!Buffer.isBuffer(message)) {
-    throw new Error('message' + idxStr + ' must be a Buffer');
-  }
-  if (!Buffer.isBuffer(signature)) {
-    throw new Error('signature' + idxStr + ' must be a Buffer');
-  }
-  if (pubKey.length !== 33) {
-    throw new Error('pubKey' + idxStr + ' must be 33 bytes long');
-  }
-  if (message.length !== 32) {
-    throw new Error('message' + idxStr + ' must be 32 bytes long');
-  }
-  if (signature.length !== 64) {
-    throw new Error('signature' + idxStr + ' must be 64 bytes long');
-  }
-}
-
-function checkBatchVerifyParams(pubKeys, messages, signatures) {
-  if (!pubKeys || !pubKeys.length) {
-    throw new Error('pubKeys must be an array with one or more elements');
-  }
-  if (!messages || !messages.length) {
-    throw new Error('messages must be an array with one or more elements');
-  }
-  if (!signatures || !signatures.length) {
-    throw new Error('signatures must be an array with one or more elements');
-  }
-  if (pubKeys.length !== messages.length || messages.length !== signatures.length) {
-    throw new Error('all parameters must be an array with the same length')
-  }
-  for (let i = 0; i < pubKeys.length; i++) {
-    checkVerifyParams(pubKeys[i], messages[i], signatures[i], i);
-  }
-}
-
-function checkRange(privateKey) {
-  if (privateKey.compareTo(one) < 0 || privateKey.compareTo(n.subtract(one)) > 0) {
-    throw new Error('privateKey must be an integer in the range 1..n-1')
-  }
-}
-
-function bufferToInt(buffer) {
-  return BigInteger.fromBuffer(buffer);
-}
-
-function intToBuffer(bigInteger) {
-  return bigInteger.toBuffer(32);
-}
-
-function hash(buffer) {
-  return Buffer.from(sha256.create().update(buffer).array());
-}
-
-function pointToBuffer(point) {
-  return point.getEncoded(true);
-}
-
-function pubKeyToPoint(pubKey) {
-  if (pubKey.length !== 33) {
-    throw new Error('pubKey must be 33 bytes long');
-  }
-  const pubKeyEven = (pubKey[0] - 0x02) === 0;
-  const x = bufferToInt(pubKey.slice(1, 33));
-  const P = curve.pointFromX(!pubKeyEven, x);
-  if (curve.isInfinity(P)) {
-    throw new Error('point is at infinity');
-  }
-  const pEven = P.affineY.isEven();
-  if (pubKeyEven !== pEven) {
-    throw new Error('point does not exist');
-  }
-  return P;
+function getE(Rx, P, m) {
+  return convert.bufferToInt(convert.hash(concat([Rx, convert.pointToBuffer(P), m]))).mod(n);
 }
 
 function randomA() {
   let a = null;
   for (; ;) {
-    a = bufferToInt(Buffer.from(randomBytes.sync(32)));
+    a = convert.bufferToInt(Buffer.from(randomBytes.sync(32)));
     try {
-      checkRange(a);
+      check.checkRange(a);
       return a;
     } catch (e) {
       // out of range, generate another one
@@ -245,10 +201,9 @@ function randomA() {
 }
 
 module.exports = {
-  VERSION,
   sign,
   verify,
   batchVerify,
-  aggregateSignatures,
-  pubKeyToPoint,
+  naiveKeyAggregation,
+  muSigNonInteractive,
 };
