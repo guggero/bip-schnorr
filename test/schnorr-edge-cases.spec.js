@@ -3,6 +3,7 @@ const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
 const bipSchnorr = require('../src/bip-schnorr');
+const muSig = require('../src/mu-sig');
 const ecurve = require('ecurve');
 
 const curve = ecurve.getCurveByName('secp256k1');
@@ -71,11 +72,11 @@ describe('edge cases', () => {
     });
   });
 
-  describe('muSigNonInteractive', () => {
+  describe('muSig.nonInteractive', () => {
     it('can check parameters', () => {
       // when / then
-      try { bipSchnorr.muSigNonInteractive(null, m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
-      try { bipSchnorr.muSigNonInteractive([], m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
+      try { muSig.nonInteractive(null, m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
+      try { muSig.nonInteractive([], m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
     });
   });
 });

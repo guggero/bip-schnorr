@@ -106,15 +106,12 @@ try {
 const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
 const privateKey2 = BigInteger.fromHex('C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7');
 const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
-const aggregatedSignature = bipSchnorr.muSigNonInteractive([privateKey1, privateKey2], message);
+const aggregatedSignature = bipSchnorr.muSig.nonInteractive([privateKey1, privateKey2], message);
 
 // verifying an aggregated signature
 const publicKey1 = Buffer.from('02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659', 'hex');
 const publicKey2 = Buffer.from('03FAC2114C2FBB091527EB7C64ECB11F8021CB45E8E7809D3C0938E4B8C0E5F84B', 'hex');
-const L = convert.hash(Buffer.concat([publicKey1, publicKey2]));
-const a1 = convert.bufferToInt(convert.hash(Buffer.concat([L, publicKey1])));
-const a2 = convert.bufferToInt(convert.hash(Buffer.concat([L, publicKey2])));
-const X = convert.pubKeyToPoint(publicKey1).multiply(a1).add(convert.pubKeyToPoint(publicKey2).multiply(a2));
+const X = bipSchnorr.muSig.pubKeyCombine([publicKey1, publicKey2]);
 try {
   bipSchnorr.verify(convert.pointToBuffer(X), message, aggregatedSignature);
   console.log('The signature is valid.');
@@ -144,12 +141,12 @@ by Blockstream.
 
 Use the **muSig** scheme that prevents that attack.
 
-### bipSchnorr.muSigNonInteractive(privateKeys : BigInteger[], message : Buffer) : Buffer
+### bipSchnorr.muSig.nonInteractive(privateKeys : BigInteger[], message : Buffer) : Buffer
 Aggregates multiple signatures of different private keys over the same message into a single 64-byte signature
 using a scheme that is safe from rogue-key attacks.
 
 This non-interactive scheme requires the knowledge of all private keys that are participating in the
-multi-signature creation. Use the **muSigInteractive** scheme that requires two steps to create
+multi-signature creation. Use the **muSig.interactive** scheme that requires two steps to create
 a signature with parties not sharing their private key.
 
 ## Implementations in different languages

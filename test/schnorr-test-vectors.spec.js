@@ -3,6 +3,7 @@ const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
 const bipSchnorr = require('../src/bip-schnorr');
+const muSig = require('../src/mu-sig');
 const convert = require('../src/convert');
 const ecurve = require('ecurve');
 
@@ -193,7 +194,7 @@ describe('test vectors', () => {
     });
   });
 
-  describe('muSigNonInteractive', () => {
+  describe('muSig.nonInteractive', () => {
     const vectorsWithPrivateKeys = testVectors
       .filter(vec => vec.d !== null)
       .filter(vec => BigInteger.fromHex(vec.d).compareTo(BigInteger.ONE) > 0);
@@ -201,18 +202,15 @@ describe('test vectors', () => {
     const x1 = BigInteger.fromHex(vectorsWithPrivateKeys[0].d);
     const x2 = BigInteger.fromHex(vectorsWithPrivateKeys[1].d);
     const x3 = BigInteger.fromHex(vectorsWithPrivateKeys[2].d);
-    const X1 = G.multiply(x1);
-    const X2 = G.multiply(x2);
-    const X3 = G.multiply(x3);
+    const X1 = Buffer.from(vectorsWithPrivateKeys[0].pk, 'hex');
+    const X2 = Buffer.from(vectorsWithPrivateKeys[1].pk, 'hex');
+    const X3 = Buffer.from(vectorsWithPrivateKeys[2].pk, 'hex');
 
     it('can sign and verify two aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
-      const L = convert.hash(Buffer.concat([convert.pointToBuffer(X1), convert.pointToBuffer(X2)]));
-      const a1 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X1)])));
-      const a2 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X2)])));
-      const X = X1.multiply(a1).add(X2.multiply(a2));
-      const signature = bipSchnorr.muSigNonInteractive([x1, x2], m);
+      const X = muSig.pubKeyCombine([X1, X2]);
+      const signature = muSig.nonInteractive([x1, x2], m);
 
       // when
       let result = false;
@@ -227,12 +225,9 @@ describe('test vectors', () => {
 
     it('can sign and verify two more aggregated signatures over same message', () => {
       // given
-      const L = convert.hash(Buffer.concat([convert.pointToBuffer(X2), convert.pointToBuffer(X3)]));
-      const a2 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X2)])));
-      const a3 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X3)])));
-      const X = X2.multiply(a2).add(X3.multiply(a3));
+      const X = muSig.pubKeyCombine([X2, X3]);
       const m = Buffer.from(vec1.m, 'hex');
-      const signature = bipSchnorr.muSigNonInteractive([x2, x3], m);
+      const signature = muSig.nonInteractive([x2, x3], m);
 
       // when
       let result = false;
@@ -247,13 +242,9 @@ describe('test vectors', () => {
 
     it('can sign and verify three aggregated signatures over same message', () => {
       // given
-      const L = convert.hash(Buffer.concat([convert.pointToBuffer(X1), convert.pointToBuffer(X2), convert.pointToBuffer(X3)]));
-      const a1 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X1)])));
-      const a2 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X2)])));
-      const a3 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X3)])));
-      const X = X1.multiply(a1).add(X2.multiply(a2)).add(X3.multiply(a3));
+      const X = muSig.pubKeyCombine([X1, X2, X3]);
       const m = Buffer.from(vec1.m, 'hex');
-      const signature = bipSchnorr.muSigNonInteractive([x1, x2, x3], m);
+      const signature = muSig.nonInteractive([x1, x2, x3], m);
 
       // when
       let result = false;
@@ -270,16 +261,13 @@ describe('test vectors', () => {
       const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
       const privateKey2 = BigInteger.fromHex('C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7');
       const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
-      const aggregatedSignature = bipSchnorr.muSigNonInteractive([privateKey1, privateKey2], message);
-      assert.strictEqual(aggregatedSignature.toString('hex'), 'd60d7f81c15d57b04f8f6074de17f1b9eef2e0a9c9b2e93550c15b45d6998dc298fde09fcea69e99b195a371d7a7e879a40474c67e4b63fb2cd5c6b7a3058156');
+      const aggregatedSignature = muSig.nonInteractive([privateKey1, privateKey2], message);
+      assert.strictEqual(aggregatedSignature.toString('hex'), 'd60d7f81c15d57b04f8f6074de17f1b9eef2e0a9c9b2e93550c15b45d6998dc2fa3abd013d1f4cdc0d16f87ebe48dbf22a3e6c179d8a5076aab7c0e9aedd89d0');
 
       // verifying an aggregated signature
       const publicKey1 = Buffer.from('02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659', 'hex');
       const publicKey2 = Buffer.from('03FAC2114C2FBB091527EB7C64ECB11F8021CB45E8E7809D3C0938E4B8C0E5F84B', 'hex');
-      const L = convert.hash(Buffer.concat([publicKey1, publicKey2]));
-      const a1 = convert.bufferToInt(convert.hash(Buffer.concat([L, publicKey1])));
-      const a2 = convert.bufferToInt(convert.hash(Buffer.concat([L, publicKey2])));
-      const X = convert.pubKeyToPoint(publicKey1).multiply(a1).add(convert.pubKeyToPoint(publicKey2).multiply(a2));
+      const X = muSig.pubKeyCombine([publicKey1, publicKey2]);
       let result = false;
       try {
         bipSchnorr.verify(convert.pointToBuffer(X), message, aggregatedSignature);
@@ -287,7 +275,7 @@ describe('test vectors', () => {
       } catch (e) {
         result = false;
       }
-      assert.strictEqual(convert.pointToBuffer(X).toString('hex'), '03a6c519a533b1e8ff578672af695a6f7f8cebb29b7d391e5c5fcfb91dcd597fb8');
+      assert.strictEqual(convert.pointToBuffer(X).toString('hex'), '03690419f5aa0e720f5c6a0d52207c03320912c5fb8fbdf25adb241aff163acbfe');
       assert.strictEqual(result, true);
     });
   });

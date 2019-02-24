@@ -4,6 +4,7 @@ const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
 const bipSchnorr = require('../src/bip-schnorr');
 const convert = require('../src/convert');
+const muSig = require('../src/mu-sig');
 const randomBytes = require('random-bytes');
 const ecurve = require('ecurve');
 
@@ -151,7 +152,7 @@ describe('random tests', () => {
     }
   });
 
-  describe('muSigNonInteractive', () => {
+  describe('muSig.nonInteractive', () => {
     for (let i = 1; i <= NUM_RANDOM_TESTS / 2; i++) {
       it('can aggregate signatures of two random private keys over same message, run #' + i, () => {
         // given
@@ -159,12 +160,9 @@ describe('random tests', () => {
         const x2 = randomInt(32);
         const X1 = G.multiply(x1);
         const X2 = G.multiply(x2);
-        const L = convert.hash(Buffer.concat([convert.pointToBuffer(X1), convert.pointToBuffer(X2)]));
-        const a1 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X1)])));
-        const a2 = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(X2)])));
-        const X = X1.multiply(a1).add(X2.multiply(a2));
+        const X = muSig.pubKeyCombine([convert.pointToBuffer(X1), convert.pointToBuffer(X2)]);
         const message = randomBuffer(32);
-        const signature = bipSchnorr.muSigNonInteractive([x1, x2], message);
+        const signature = muSig.nonInteractive([x1, x2], message);
 
         // when
         let result = true;
@@ -189,29 +187,14 @@ describe('random tests', () => {
         // given
         const privateKeys = [];
         const publicKeys = [];
-        let pubKeyBuf = null;
         for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
           const xi = randomInt(32);
           const Xi = G.multiply(xi);
-          if (i === 0) {
-            pubKeyBuf = convert.pointToBuffer(Xi);
-          } else {
-            pubKeyBuf = Buffer.concat([pubKeyBuf, convert.pointToBuffer(Xi)]);
-          }
           privateKeys.push(xi);
           publicKeys.push(Xi);
         }
-        const L = convert.hash(pubKeyBuf);
-        let X = null;
-        for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
-          const a = convert.bufferToInt(convert.hash(Buffer.concat([L, convert.pointToBuffer(publicKeys[i])])));
-          if (i === 0) {
-            X = publicKeys[i].multiply(a);
-          } else {
-            X = X.add(publicKeys[i].multiply(a));
-          }
-        }
-        const signature = bipSchnorr.muSigNonInteractive(privateKeys, message);
+        let X = muSig.pubKeyCombine(publicKeys.map(convert.pointToBuffer));
+        const signature = muSig.nonInteractive(privateKeys, message);
 
         // when
         let result = true;
