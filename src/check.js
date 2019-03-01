@@ -49,7 +49,7 @@ function checkPrivateKey(privateKey, idx) {
   if (!BigInteger.isBigInteger(privateKey)) {
     throw new Error('privateKey' + idxStr + ' must be a BigInteger');
   }
-  checkRange(privateKey);
+  checkRange('privateKey', privateKey);
 }
 
 function checkPubKeysUnique(pubKeys) {
@@ -89,9 +89,9 @@ function checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell)
   checkBuffer('ell', ell, 32);
 }
 
-function checkRange(privateKey) {
-  if (privateKey.compareTo(one) < 0 || privateKey.compareTo(n.subtract(one)) > 0) {
-    throw new Error('privateKey must be an integer in the range 1..n-1')
+function checkRange(name, scalar) {
+  if (scalar.compareTo(one) < 0 || scalar.compareTo(n.subtract(one)) > 0) {
+    throw new Error(name + ' must be an integer in the range 1..n-1')
   }
 }
 

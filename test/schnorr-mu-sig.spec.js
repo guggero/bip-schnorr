@@ -9,7 +9,7 @@ const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const G = curve.G;
 
-const testVectors = require('./test-vectors-musig.json');
+const testVectors = require('./test-vectors-mu-sig.json');
 
 describe('muSig', () => {
   describe('pubKeyCombine', () => {

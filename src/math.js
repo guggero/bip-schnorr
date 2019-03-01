@@ -41,7 +41,7 @@ function randomA() {
   for (; ;) {
     a = convert.bufferToInt(Buffer.from(randomBytes.sync(32)));
     try {
-      check.checkRange(a);
+      check.checkRange('a', a);
       return a;
     } catch (e) {
       // out of range, generate another one

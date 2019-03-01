@@ -2,7 +2,7 @@
 const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
-const bipSchnorr = require('../src/bip-schnorr');
+const schnorr = require('../src/schnorr');
 const convert = require('../src/convert');
 const muSig = require('../src/mu-sig');
 const randomBytes = require('random-bytes');
@@ -38,9 +38,9 @@ describe('random tests', () => {
       for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
         let result = true;
         let error = null;
-        const signature = bipSchnorr.sign(privateKeys[i], messages[i]);
+        const signature = schnorr.sign(privateKeys[i], messages[i]);
         try {
-          bipSchnorr.verify(pubKeys[i], messages[i], signature);
+          schnorr.verify(pubKeys[i], messages[i], signature);
         } catch (e) {
           result = false;
           error = e;
@@ -64,7 +64,7 @@ describe('random tests', () => {
         const d = randomInt(32);
         const pubKey = convert.pointToBuffer(G.multiply(d));
         const message = randomBuffer(32);
-        const signature = bipSchnorr.sign(d, message);
+        const signature = schnorr.sign(d, message);
         pubKeys.push(pubKey);
         messages.push(message);
         signatures.push(signature);
@@ -74,7 +74,7 @@ describe('random tests', () => {
       let result = true;
       let error = null;
       try {
-        bipSchnorr.batchVerify(pubKeys, messages, signatures);
+        schnorr.batchVerify(pubKeys, messages, signatures);
       } catch (e) {
         result = false;
         error = e;
@@ -96,13 +96,13 @@ describe('random tests', () => {
         const pubKey1 = G.multiply(d1);
         const pubKey2 = G.multiply(d2);
         const message = randomBuffer(32);
-        const signature = bipSchnorr.naiveKeyAggregation([d1, d2], message);
+        const signature = schnorr.naiveKeyAggregation([d1, d2], message);
 
         // when
         let result = true;
         let error = null;
         try {
-          bipSchnorr.verify(convert.pointToBuffer(pubKey1.add(pubKey2)), message, signature);
+          schnorr.verify(convert.pointToBuffer(pubKey1.add(pubKey2)), message, signature);
         } catch (e) {
           result = false;
           error = e;
@@ -131,13 +131,13 @@ describe('random tests', () => {
           }
           privateKeys.push(d);
         }
-        const signature = bipSchnorr.naiveKeyAggregation(privateKeys, message);
+        const signature = schnorr.naiveKeyAggregation(privateKeys, message);
 
         // when
         let result = true;
         let error = null;
         try {
-          bipSchnorr.verify(convert.pointToBuffer(sumPubKey), message, signature);
+          schnorr.verify(convert.pointToBuffer(sumPubKey), message, signature);
         } catch (e) {
           result = false;
           error = e;
@@ -168,7 +168,7 @@ describe('random tests', () => {
         let result = true;
         let error = null;
         try {
-          bipSchnorr.verify(convert.pointToBuffer(X), message, signature);
+          schnorr.verify(convert.pointToBuffer(X), message, signature);
         } catch (e) {
           result = false;
           error = e;
@@ -200,7 +200,7 @@ describe('random tests', () => {
         let result = true;
         let error = null;
         try {
-          bipSchnorr.verify(convert.pointToBuffer(X), message, signature);
+          schnorr.verify(convert.pointToBuffer(X), message, signature);
         } catch (e) {
           result = false;
           error = e;

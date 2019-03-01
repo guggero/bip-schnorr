@@ -92,28 +92,45 @@ function nonInteractive(privateKeys, message) {
 
 function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, idx) {
   check.checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell);
+  const n = curve.n;
 
   const session = {
     sessionId,
     message,
     pubKeyCombined,
     ell,
+    idx,
   };
-  const coefficient = convert.bufferToInt(computeCoefficient(ell, idx));
-  const sessionSecret = privateKey.multiply(coefficient);
-  const nonceData = [sessionId, message, pubKeyCombined, convert.intToBuffer(sessionSecret)];
-  session.secNonce = convert.bufferToInt(convert.hash(concat(nonceData)));
-  // TODO overflow of nonce
-  const R = G.multiply(session.secNonce);
-  const Rx = convert.intToBuffer(R.affineX);
-  session.commitment = convert.hash(Rx);
+  const coefficient = computeCoefficient(ell, idx);
+  session.secretKey = privateKey.multiply(coefficient).mod(n);
+  const nonceData = concat([sessionId, message, pubKeyCombined, convert.intToBuffer(privateKey)]);
+  session.secretNonce = convert.bufferToInt(convert.hash(nonceData));
+  check.checkRange('secNonce', session.secretNonce);
+  const R = G.multiply(session.secretNonce);
+  session.nonce = convert.pointToBuffer(R);
+  session.commitment = convert.hash(session.nonce);
   return session;
+}
+
+function sessionGetPublicNonce() {
+  // TODO
+}
+
+function sessionCombineNonces() {
+  // TODO
+}
+
+function partialSign() {
+
+}
+
+function partialSigCombine() {
+
 }
 
 module.exports = {
   nonInteractive,
   computeEll,
-  computeCoefficient,
   pubKeyCombine,
   sessionInitialize,
 };

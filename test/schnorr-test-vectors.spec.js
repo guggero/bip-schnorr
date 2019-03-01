@@ -2,7 +2,7 @@
 const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
-const bipSchnorr = require('../src/bip-schnorr');
+const schnorr = require('../src/schnorr');
 const muSig = require('../src/mu-sig');
 const convert = require('../src/convert');
 const ecurve = require('ecurve');
@@ -10,7 +10,7 @@ const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const G = curve.G;
 
-const testVectors = require('./test-vectors.json');
+const testVectors = require('./test-vectors-schnorr.json');
 
 describe('test vectors', () => {
   describe('sign', () => {
@@ -23,7 +23,7 @@ describe('test vectors', () => {
           const m = Buffer.from(vec.m, 'hex');
 
           // when
-          const result = bipSchnorr.sign(d, m);
+          const result = schnorr.sign(d, m);
 
           // then
           assert.strictEqual(result.toString('hex'), vec.sig.toLowerCase());
@@ -45,7 +45,7 @@ describe('test vectors', () => {
           let result = true;
           let error = null;
           try {
-            bipSchnorr.verify(pk, m, sig);
+            schnorr.verify(pk, m, sig);
           } catch (e) {
             result = false;
             error = e;
@@ -72,7 +72,7 @@ describe('test vectors', () => {
       let result = true;
       let error = null;
       try {
-        bipSchnorr.batchVerify(pubKeys, messages, signatures);
+        schnorr.batchVerify(pubKeys, messages, signatures);
       } catch (e) {
         result = false;
         error = e;
@@ -98,7 +98,7 @@ describe('test vectors', () => {
       let result = true;
       let error = null;
       try {
-        bipSchnorr.batchVerify(pubKeys, messages, signatures);
+        schnorr.batchVerify(pubKeys, messages, signatures);
       } catch (e) {
         result = false;
         error = e;
@@ -126,12 +126,12 @@ describe('test vectors', () => {
     it('can sign and verify two aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
-      const signature = bipSchnorr.naiveKeyAggregation([d1, d2], m);
+      const signature = schnorr.naiveKeyAggregation([d1, d2], m);
 
       // when
       let result = false;
       try {
-        bipSchnorr.verify(convert.pointToBuffer(P1.add(P2)), m, signature);
+        schnorr.verify(convert.pointToBuffer(P1.add(P2)), m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -142,12 +142,12 @@ describe('test vectors', () => {
     it('can sign and verify two more aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
-      const signature = bipSchnorr.naiveKeyAggregation([d2, d3], m);
+      const signature = schnorr.naiveKeyAggregation([d2, d3], m);
 
       // when
       let result = false;
       try {
-        bipSchnorr.verify(convert.pointToBuffer(P2.add(P3)), m, signature);
+        schnorr.verify(convert.pointToBuffer(P2.add(P3)), m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -158,12 +158,12 @@ describe('test vectors', () => {
     it('can sign and verify three aggregated signatures over same message', () => {
       // given
       const m = Buffer.from(vec1.m, 'hex');
-      const signature = bipSchnorr.naiveKeyAggregation([d1, d2, d3], m);
+      const signature = schnorr.naiveKeyAggregation([d1, d2, d3], m);
 
       // when
       let result = false;
       try {
-        bipSchnorr.verify(convert.pointToBuffer(P), m, signature);
+        schnorr.verify(convert.pointToBuffer(P), m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -175,7 +175,7 @@ describe('test vectors', () => {
       const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
       const privateKey2 = BigInteger.fromHex('C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7');
       const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
-      const aggregatedSignature = bipSchnorr.naiveKeyAggregation([privateKey1, privateKey2], message);
+      const aggregatedSignature = schnorr.naiveKeyAggregation([privateKey1, privateKey2], message);
       assert.strictEqual(aggregatedSignature.toString('hex'), 'd60d7f81c15d57b04f8f6074de17f1b9eef2e0a9c9b2e93550c15b45d6998dc24ef5e393b356e7c334f36cee15e0f5f1e9ce06e7911793ddb9bd922d545b7525');
 
       // verifying an aggregated signature
@@ -184,7 +184,7 @@ describe('test vectors', () => {
       const sumOfPublicKeys = convert.pubKeyToPoint(publicKey1).add(convert.pubKeyToPoint(publicKey2));
       let result = false;
       try {
-        bipSchnorr.verify(convert.pointToBuffer(sumOfPublicKeys), message, aggregatedSignature);
+        schnorr.verify(convert.pointToBuffer(sumOfPublicKeys), message, aggregatedSignature);
         result = true;
       } catch (e) {
         result = false;
@@ -215,7 +215,7 @@ describe('test vectors', () => {
       // when
       let result = false;
       try {
-        bipSchnorr.verify(convert.pointToBuffer(X), m, signature);
+        schnorr.verify(convert.pointToBuffer(X), m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -232,7 +232,7 @@ describe('test vectors', () => {
       // when
       let result = false;
       try {
-        bipSchnorr.verify(convert.pointToBuffer(X), m, signature);
+        schnorr.verify(convert.pointToBuffer(X), m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -249,7 +249,7 @@ describe('test vectors', () => {
       // when
       let result = false;
       try {
-        bipSchnorr.verify(convert.pointToBuffer(X), m, signature);
+        schnorr.verify(convert.pointToBuffer(X), m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -270,7 +270,7 @@ describe('test vectors', () => {
       const X = muSig.pubKeyCombine([publicKey1, publicKey2]);
       let result = false;
       try {
-        bipSchnorr.verify(convert.pointToBuffer(X), message, aggregatedSignature);
+        schnorr.verify(convert.pointToBuffer(X), message, aggregatedSignature);
         result = true;
       } catch (e) {
         result = false;

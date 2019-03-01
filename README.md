@@ -43,20 +43,20 @@ yarn add bip-schnorr
 NOTE: All parameters are either of type `BigInteger` or `Buffer` (or an array of those).
 
 ```javascript
-const bipSchnorr = require('bip-schnorr');
-const convert = bipSchnorr.convert;
+const schnorr = require('bip-schnorr');
+const convert = schnorr.convert;
 
 // signing
 const privateKey = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
 const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
-const createdSignature = bipSchnorr.sign(privateKey, message);
+const createdSignature = schnorr.sign(privateKey, message);
 console.log('The signature is: ' + createdSignature.toString('hex'));
 
 // verifying
 const publicKey = Buffer.from('02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659', 'hex');
 const signatureToVerify = Buffer.from('2A298DACAE57395A15D0795DDBFD1DCB564DA82B0F269BC70A74F8220429BA1D1E51A22CCEC35599B8F266912281F8365FFC2D035A230434A1A64DC59F7013FD', 'hex');
 try {
-  bipSchnorr.verify(publicKey, message, signatureToVerify);
+  schnorr.verify(publicKey, message, signatureToVerify);
   console.log('The signature is valid.');
 } catch (e) {
   console.error('The signature verification failed: ' + e);
@@ -79,7 +79,7 @@ const signatures = [
   Buffer.from('68CA1CC46F291A385E7C255562068357F964532300BEADFFB72DD93668C0C1CAC8D26132EB3200B86D66DE9C661A464C6B2293BB9A9F5B966E53CA736C7E504F', 'hex'),
 ];
 try {
-  bipSchnorr.batchVerify(publicKeys, messages, signatures);
+  schnorr.batchVerify(publicKeys, messages, signatures);
   console.log('The signatures are valid.');
 } catch (e) {
   console.error('The signature verification failed: ' + e);
@@ -89,14 +89,14 @@ try {
 const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
 const privateKey2 = BigInteger.fromHex('C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7');
 const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
-const aggregatedSignature = bipSchnorr.naiveKeyAggregation([privateKey1, privateKey2], message);
+const aggregatedSignature = schnorr.naiveKeyAggregation([privateKey1, privateKey2], message);
 
 // verifying an aggregated signature
 const publicKey1 = Buffer.from('02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659', 'hex');
 const publicKey2 = Buffer.from('03FAC2114C2FBB091527EB7C64ECB11F8021CB45E8E7809D3C0938E4B8C0E5F84B', 'hex');
 const sumOfPublicKeys = convert.pubKeyToPoint(publicKey1).add(convert.pubKeyToPoint(publicKey2));
 try {
-  bipSchnorr.verify(convert.pointToBuffer(sumOfPublicKeys), message, aggregatedSignature);
+  schnorr.verify(convert.pointToBuffer(sumOfPublicKeys), message, aggregatedSignature);
   console.log('The signature is valid.');
 } catch (e) {
   console.error('The signature verification failed: ' + e);
@@ -106,14 +106,14 @@ try {
 const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
 const privateKey2 = BigInteger.fromHex('C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7');
 const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
-const aggregatedSignature = bipSchnorr.muSig.nonInteractive([privateKey1, privateKey2], message);
+const aggregatedSignature = schnorr.muSig.nonInteractive([privateKey1, privateKey2], message);
 
 // verifying an aggregated signature
 const publicKey1 = Buffer.from('02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659', 'hex');
 const publicKey2 = Buffer.from('03FAC2114C2FBB091527EB7C64ECB11F8021CB45E8E7809D3C0938E4B8C0E5F84B', 'hex');
-const X = bipSchnorr.muSig.pubKeyCombine([publicKey1, publicKey2]);
+const X = schnorr.muSig.pubKeyCombine([publicKey1, publicKey2]);
 try {
-  bipSchnorr.verify(convert.pointToBuffer(X), message, aggregatedSignature);
+  schnorr.verify(convert.pointToBuffer(X), message, aggregatedSignature);
   console.log('The signature is valid.');
 } catch (e) {
   console.error('The signature verification failed: ' + e);
@@ -122,16 +122,16 @@ try {
 
 ## API
 
-### bipSchnorr.sign(privateKey : BigInteger, message : Buffer) : Buffer
+### schnorr.sign(privateKey : BigInteger, message : Buffer) : Buffer
 Sign a 32-byte message with the private key, returning a 64-byte signature.
 
-### bipSchnorr.verify(pubKey : Buffer, message : Buffer, signature : Buffer) : void
+### schnorr.verify(pubKey : Buffer, message : Buffer, signature : Buffer) : void
 Verify a 64-byte signature of a 32-byte message against the public key. Throws an `Error` if verification fails.
 
-### bipSchnorr.batchVerify(pubKeys : Buffer[], messages : Buffer[], signatures : Buffer[]) : void
+### schnorr.batchVerify(pubKeys : Buffer[], messages : Buffer[], signatures : Buffer[]) : void
 Verify a list of 64-byte signatures as a batch operation. Throws an `Error` if verification fails.
 
-### bipSchnorr.naiveKeyAggregation(privateKeys : BigInteger[], message : Buffer) : Buffer
+### schnorr.naiveKeyAggregation(privateKeys : BigInteger[], message : Buffer) : Buffer
 Aggregates multiple signatures of different private keys over the same message into a single 64-byte signature.
 
 This is just a demo of how the naive Schnorr multi-signature (or key aggregation scheme) can work.  
@@ -141,7 +141,7 @@ by Blockstream.
 
 Use the **muSig** scheme that prevents that attack.
 
-### bipSchnorr.muSig.nonInteractive(privateKeys : BigInteger[], message : Buffer) : Buffer
+### schnorr.muSig.nonInteractive(privateKeys : BigInteger[], message : Buffer) : Buffer
 Aggregates multiple signatures of different private keys over the same message into a single 64-byte signature
 using a scheme that is safe from rogue-key attacks.
 
