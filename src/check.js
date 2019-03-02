@@ -17,28 +17,28 @@ function checkBuffer(name, buf, len, idx) {
   }
 }
 
-function checkPubKeyArr(pubKeys) {
-  if (!pubKeys || !pubKeys.length) {
-    throw new Error('pubKeys must be an array with one or more elements');
+function checkArray(name, arr) {
+  if (!arr || !arr.length) {
+    throw new Error(name + ' must be an array with one or more elements');
   }
+}
+
+function checkPubKeyArr(pubKeys) {
+  checkArray('pubKeys', pubKeys);
   for (let i = 0; i < pubKeys.length; i++) {
     checkBuffer('pubKey', pubKeys[i], 33, i);
   }
 }
 
 function checkMessageArr(messages) {
-  if (!messages || !messages.length) {
-    throw new Error('messages must be an array with one or more elements');
-  }
+  checkArray('messages', messages);
   for (let i = 0; i < messages.length; i++) {
     checkBuffer('message', messages[i], 32, i);
   }
 }
 
 function checkSignatureArr(signatures) {
-  if (!signatures || !signatures.length) {
-    throw new Error('signatures must be an array with one or more elements');
-  }
+  checkArray('signatures', signatures);
   for (let i = 0; i < signatures.length; i++) {
     checkBuffer('signature', signatures[i], 64, i);
   }
@@ -123,5 +123,6 @@ module.exports = {
   checkSignatureInput,
   checkPointExists,
   checkPubKeyArr,
-  checkPubKeysUnique
+  checkPubKeysUnique,
+  checkArray,
 };

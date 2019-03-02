@@ -27,8 +27,8 @@ function computeCoefficient(ell, idx) {
   return convert.bufferToInt(convert.hash(data)).mod(n);
 }
 
-function pubKeyCombine(pubKeys) {
-  const ell = computeEll(pubKeys);
+function pubKeyCombine(pubKeys, pubKeyHash) {
+  const ell = pubKeyHash || computeEll(pubKeys);
   let X = null;
   for (let i = 0; i < pubKeys.length; i++) {
     const Xi = convert.pubKeyToPoint(pubKeys[i]);
@@ -92,7 +92,8 @@ function nonInteractive(privateKeys, message) {
 
 function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, idx) {
   check.checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell);
-  const n = curve.n;
+  const signers = [];
+  signers[idx] = {};
 
   const session = {
     sessionId,
@@ -100,6 +101,7 @@ function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, 
     pubKeyCombined,
     ell,
     idx,
+    signers
   };
   const coefficient = computeCoefficient(ell, idx);
   session.secretKey = privateKey.multiply(coefficient).mod(n);
@@ -109,6 +111,8 @@ function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, 
   const R = G.multiply(session.secretNonce);
   session.nonce = convert.pointToBuffer(R);
   session.commitment = convert.hash(session.nonce);
+  signers[idx].nonce = session.nonce;
+  signers[idx].commitment = session.commitment;
   return session;
 }
 

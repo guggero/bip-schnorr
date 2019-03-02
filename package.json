@@ -1,7 +1,7 @@
 {
   "name": "bip-schnorr",
   "version": "0.2.0",
-  "description": "Pure JavaScript implementation of the BIP schnorr signature scheme",
+  "description": "Pure JavaScript implementation of the BIP schnorr signature scheme and the muSig multi-signature scheme",
   "main": "./src/index.js",
   "engines": {
     "node": ">=8.0.0"
@@ -11,7 +11,8 @@
     "schnorr",
     "elliptic",
     "curve",
-    "authenticated-encryption"
+    "muSig",
+    "multi-signature"
   ],
   "scripts": {
     "coverage-coveralls": "nyc mocha ./test/schnorr-*.spec.js && nyc report --reporter=text-lcov | coveralls",
