@@ -116,12 +116,13 @@ function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, 
   return session;
 }
 
-function sessionGetPublicNonce() {
-  // TODO
-}
-
-function sessionCombineNonces() {
-  // TODO
+function sessionCombineNonces(nonces) {
+  check.checkNonceArr(nonces);
+  let R = convert.pubKeyToPoint(nonces[0]);
+  for (let i = 1; i < nonces.length; i++) {
+    R = R.add(convert.pubKeyToPoint(nonces[i]));
+  }
+  return R;
 }
 
 function partialSign() {
@@ -137,4 +138,5 @@ module.exports = {
   computeEll,
   pubKeyCombine,
   sessionInitialize,
+  sessionCombineNonces,
 };

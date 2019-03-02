@@ -4,12 +4,9 @@ const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
 const convert = require('../src/convert');
 const muSig = require('../src/mu-sig');
-const ecurve = require('ecurve');
 const randomBytes = require('random-bytes');
 
-const curve = ecurve.getCurveByName('secp256k1');
-const G = curve.G;
-
+const concat = Buffer.concat;
 const testVectors = require('./test-vectors-mu-sig.json');
 
 const randomBuffer = (len) => Buffer.from(randomBytes.sync(len));
@@ -60,15 +57,17 @@ describe('muSig', () => {
       // data known to every participant
       const publicData = {
         pubKeys: [
-          Buffer.from('02d6a547d1e4d4478f7875bb5a3bfc2cd1051af6c3030f1dea85980410d69e4d26', 'hex'),
-          Buffer.from('0270ac05596bef45b09d99b88a7a914450293dba1ba1f8368d50bc6b0c19ad20d7', 'hex'),
-          Buffer.from('025bcc6d9ea5be8bdc34f01f28413942af0d7f72997ec393f5b15d103e0dbcefeb', 'hex'),
+          Buffer.from('031a15f301cdc7c4c27e90e52c2b9ffce69630b54f06973c72579ed76cc3070d1b', 'hex'),
+          Buffer.from('03f6b7c559c3a141d8b80ab3f85f971490f4ddf34946821587bb2f3a80a5b6cf1a', 'hex'),
+          Buffer.from('028f53c4cd3188f264552320f11a513a09dd54c9b76e9b0cc118abcd88434a5bc0', 'hex'),
         ],
-        message: convert.hash(Buffer.from('muSig is awesome!', 'utf8')),
+        message: Buffer.from('746869735f636f756c645f62655f7468655f686173685f6f665f615f6d736721', 'hex'), // TODO convert.hash(Buffer.from('muSig is awesome!', 'utf8')),
         pubKeyHash: null,
         pubKeyCombined: null,
         commitments: [],
-        nonces: []
+        nonceCommitmentsHash: null,
+        nonces: [],
+        combinedNonce: null,
       };
 
       // data only known by the individual party, these values are never shared
@@ -76,17 +75,20 @@ describe('muSig', () => {
       const signerPrivateData = [
         // signer 1
         {
-          privateKey: BigInteger.fromHex('bebb86c4a1562ad2c58e3ef534e15e5d712dc7cb83f50855366e8e659c4f5403'),
+          privateKey: BigInteger.fromHex('7982698434d4391b0ccda4171a6d16e8a45183651215a350754e12339292a3bb'),
+          sessionId: Buffer.from('4575dfd17dd2c1b93e85770f90b9832fc542d61bfb4570baa35d0cb83d73b3ec', 'hex'), // TODO remove
           session: null,
         },
         // signer 2
         {
-          privateKey: BigInteger.fromHex('2871a7bf5ecf8cf2c07c735ab3ce997ecd3c1163f566648464b560e91f58a8ff'),
+          privateKey: BigInteger.fromHex('4c3f608dedb0a12eb449782691b4a0e4a55c8202286b6dc1cb61faba46582e51'),
+          sessionId: Buffer.from('34cc0d68a6d58342f7a8a935b3badc8e0c77e0baf1725a11689225e593313f54', 'hex'), // TODO remove
           session: null,
         },
         // signer 3
         {
-          privateKey: BigInteger.fromHex('2bfcb47df62a2a4b1bed0a29378a92f3e851a13e0064dcdbdb5851ec29664d98')
+          privateKey: BigInteger.fromHex('d4c3ea5563b7e4e7075707b7f6e7ac3222d11a005d28d35b6cdbffb78c49441f'),
+          sessionId: Buffer.from('e9f349ae06dcfa12956df19b9f6cc549ef092478ce32de889790e94d6d9eef8e', 'hex'), // TODO remove
           session: null,
         }
       ];
@@ -97,14 +99,15 @@ describe('muSig', () => {
       // party and then be distributed to every participant.
       // -----------------------------------------------------------------------
       publicData.pubKeyHash = muSig.computeEll(publicData.pubKeys);
-      publicData.pubKeyCombined = muSig.pubKeyCombine(publicData.pubKeys, publicData.pubKeyHash);
+      publicData.pubKeyCombined = convert.pointToBuffer(muSig.pubKeyCombine(publicData.pubKeys, publicData.pubKeyHash));
 
       // -----------------------------------------------------------------------
       // Step 2: Create the private signing session
       // Each signing party does this in private.
       // -----------------------------------------------------------------------
       signerPrivateData.forEach((data, idx) => {
-        const sessionId = randomBuffer(32); // must never be reused between sessions!
+        // TODO const sessionId = randomBuffer(32); // must never be reused between sessions!
+        const sessionId = data.sessionId;
         data.session = muSig.sessionInitialize(
           sessionId,
           data.privateKey,
@@ -116,13 +119,29 @@ describe('muSig', () => {
       });
 
       // -----------------------------------------------------------------------
-      // Step 3: Exchange commitments
+      // Step 3: Exchange commitments (communication round 1)
       // The signers now exchange the commitments. This is simulated here by
       // copying the values from the private data to public data array.
       // -----------------------------------------------------------------------
       for (let i = 0; i < publicData.pubKeys.length; i++) {
         publicData.commitments[i] = signerPrivateData[i].session.commitment;
       }
+
+      // Step 4: Get nonce commitments hash
+      publicData.nonceCommitmentsHash = convert.hash(concat(publicData.commitments));
+
+      // Step 5: Get nonces (communication round 2)
+      for (let i = 0; i < publicData.pubKeys.length; i++) {
+        publicData.nonces[i] = signerPrivateData[i].session.nonce;
+      }
+
+      // Step 6: Combine nonces
+      publicData.combinedNonce = muSig.sessionCombineNonces(publicData.nonces);
+
+      // Step 7: Generate partial signatures
+      signerPrivateData.forEach((data, idx) => {
+
+      });
     });
   });
 });

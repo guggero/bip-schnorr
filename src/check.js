@@ -44,6 +44,13 @@ function checkSignatureArr(signatures) {
   }
 }
 
+function checkNonceArr(nonces) {
+  checkArray('nonces', nonces);
+  for (let i = 0; i < nonces.length; i++) {
+    checkBuffer('nonce', nonces[i], 33, i);
+  }
+}
+
 function checkPrivateKey(privateKey, idx) {
   const idxStr = (idx !== undefined ? '[' + idx + ']' : '');
   if (!BigInteger.isBigInteger(privateKey)) {
@@ -125,4 +132,5 @@ module.exports = {
   checkPubKeyArr,
   checkPubKeysUnique,
   checkArray,
+  checkNonceArr,
 };
