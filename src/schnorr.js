@@ -36,10 +36,8 @@ function verify(pubKey, message, signature) {
   const r = convert.bufferToInt(signature.slice(0, 32));
   const s = convert.bufferToInt(signature.slice(32, 64));
   check.checkSignatureInput(r, s);
-  const e = convert.bufferToInt(convert.hash(concat([convert.intToBuffer(r), convert.pointToBuffer(P), message]))).mod(n);
-  const sG = G.multiply(s);
-  const eP = P.multiply(e);
-  const R = sG.add(eP.negate());
+  const e = math.getE(convert.intToBuffer(r), P, message);
+  const R = math.getR(s, e, P);
   if (curve.isInfinity(R) || math.jacobi(R.affineY) !== 1 || !R.affineX.equals(r)) {
     throw new Error('signature verification failed');
   }

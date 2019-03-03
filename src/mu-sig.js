@@ -8,7 +8,6 @@ const convert = require('./convert');
 
 const concat = Buffer.concat;
 const G = curve.G;
-const p = curve.p;
 const n = curve.n;
 const zero = BigInteger.ZERO;
 const MUSIG_TAG = convert.hash(Buffer.from('MuSig coefficient'));
@@ -92,16 +91,10 @@ function nonInteractive(privateKeys, message) {
 
 function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, idx) {
   check.checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell);
-  const signers = [];
-  signers[idx] = {};
 
   const session = {
     sessionId,
-    message,
-    pubKeyCombined,
-    ell,
     idx,
-    signers
   };
   const coefficient = computeCoefficient(ell, idx);
   session.secretKey = privateKey.multiply(coefficient).mod(n);
@@ -111,12 +104,10 @@ function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, 
   const R = G.multiply(session.secretNonce);
   session.nonce = convert.pointToBuffer(R);
   session.commitment = convert.hash(session.nonce);
-  signers[idx].nonce = session.nonce;
-  signers[idx].commitment = session.commitment;
   return session;
 }
 
-function sessionCombineNonces(nonces) {
+function sessionNonceCombine(nonces) {
   check.checkNonceArr(nonces);
   let R = convert.pubKeyToPoint(nonces[0]);
   for (let i = 1; i < nonces.length; i++) {
@@ -125,12 +116,38 @@ function sessionCombineNonces(nonces) {
   return R;
 }
 
-function partialSign() {
-
+function partialSign(session, message, nonceCombined, pubKeyCombined) {
+  const Rx = convert.intToBuffer(nonceCombined.affineX);
+  const e = math.getE(Rx, convert.pubKeyToPoint(pubKeyCombined), message);
+  const sk = session.secretKey;
+  const k0 = session.secretNonce;
+  const k = math.getK(nonceCombined, k0);
+  return sk.multiply(e).add(k);
 }
 
-function partialSigCombine() {
+function partialSigVerify(partialSig, message, nonceCombined, pubKeyCombined, ell, idx, pubKey, nonce) {
+  const Rx = convert.intToBuffer(nonceCombined.affineX);
+  const e = math.getE(Rx, convert.pubKeyToPoint(pubKeyCombined), message);
+  const coefficient = computeCoefficient(ell, idx);
+  const Ri = convert.pubKeyToPoint(nonce);
+  let R = math.getR(partialSig, e.multiply(coefficient).mod(n), convert.pubKeyToPoint(pubKey));
+  if (math.jacobi(convert.bufferToInt(Rx)) === 1) {
+    R = R.negate();
+  }
+  const sum = R.add(Ri);
+  if (!sum.curve.isInfinity(sum)) {
+    throw new Error('partial signature verification failed');
+  }
+}
 
+function partialSigCombine(nonceCombined, partialSigs) {
+  check.checkArray('partialSigs', partialSigs);
+  const Rx = convert.intToBuffer(nonceCombined.affineX);
+  let s = partialSigs[0];
+  for (let i = 1; i < partialSigs.length; i++) {
+    s = s.add(partialSigs[i]).mod(n);
+  }
+  return concat([Rx, convert.intToBuffer(s)]);
 }
 
 module.exports = {
@@ -138,5 +155,8 @@ module.exports = {
   computeEll,
   pubKeyCombine,
   sessionInitialize,
-  sessionCombineNonces,
+  sessionNonceCombine,
+  partialSign,
+  partialSigVerify,
+  partialSigCombine,
 };

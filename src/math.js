@@ -7,6 +7,7 @@ const check = require('./check');
 const convert = require('./convert');
 
 const concat = Buffer.concat;
+const G = curve.G;
 const p = curve.p;
 const n = curve.n;
 const one = BigInteger.ONE;
@@ -36,6 +37,12 @@ function getE(Rx, P, m) {
   return convert.bufferToInt(convert.hash(concat([Rx, convert.pointToBuffer(P), m]))).mod(n);
 }
 
+function getR(s, e, P) {
+  const sG = G.multiply(s);
+  const eP = P.multiply(e);
+  return sG.add(eP.negate());
+}
+
 function randomA() {
   let a = null;
   for (; ;) {
@@ -54,5 +61,6 @@ module.exports = {
   jacobi,
   getK,
   getE,
+  getR,
   randomA,
 };
