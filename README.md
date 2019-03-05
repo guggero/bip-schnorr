@@ -9,11 +9,15 @@
 [![devDependency Status](https://david-dm.org/guggero/bip-schnorr/dev-status.svg)](https://david-dm.org/guggero/bip-schnorr#info=devDependencies)
 
 This is a pure JavaScript implementation of the standard 64-byte Schnorr signature
-scheme over the elliptic curve *secp256k1*.
+scheme over the elliptic curve *secp256k1* and its application in the
+`MuSig` [multi-signature scheme proposed by Blockstream](https://blockstream.com/2018/01/23/musig-key-aggregation-schnorr-signatures/).
 
 The code is based upon the
 [initial proposal of Pieter Wuille](https://github.com/sipa/bips/blob/bip-schnorr/bip-schnorr.mediawiki)
 when it didn't have a BIP number assigned yet.
+
+The MuSig implementation is based upon the C implementation in the
+[secp256k1-zkp fork](https://github.com/ElementsProject/secp256k1-zkp)
 
 I am by no means an expert in high performance JavaScript or the underlying cryptography.
 So this library is probably really slow.
@@ -23,7 +27,8 @@ The current version passes all test vectors provided
 **But the author does not give any guarantees that the algorithm is implemented
 correctly for every edge case!**
 
-Please use for educational purposes only.
+The BIP and C reference implementations are still under development so the API of
+this implementation is also not yet stable and can change when the reference implementation changes. 
 
 ## How to install
 
