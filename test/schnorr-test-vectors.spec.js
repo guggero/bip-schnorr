@@ -270,7 +270,7 @@ describe('test vectors', () => {
       const X = muSig.pubKeyCombine([publicKey1, publicKey2]);
       let result = false;
       try {
-        schnorr.verify(convert.pointToBuffer(X), message, aggregatedSignature);
+        schnorr.verify(X, message, aggregatedSignature);
         result = true;
       } catch (e) {
         result = false;
