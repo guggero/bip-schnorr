@@ -168,7 +168,7 @@ describe('random tests', () => {
         let result = true;
         let error = null;
         try {
-          schnorr.verify(convert.pointToBuffer(X), message, signature);
+          schnorr.verify(X, message, signature);
         } catch (e) {
           result = false;
           error = e;
@@ -200,7 +200,7 @@ describe('random tests', () => {
         let result = true;
         let error = null;
         try {
-          schnorr.verify(convert.pointToBuffer(X), message, signature);
+          schnorr.verify(X, message, signature);
         } catch (e) {
           result = false;
           error = e;

@@ -1,6 +1,6 @@
 {
   "name": "bip-schnorr",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Pure JavaScript implementation of the BIP schnorr signature scheme and the muSig multi-signature scheme",
   "main": "./src/index.js",
   "engines": {

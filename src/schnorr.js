@@ -38,7 +38,7 @@ function verify(pubKey, message, signature) {
   check.checkSignatureInput(r, s);
   const e = math.getE(convert.intToBuffer(r), P, message);
   const R = math.getR(s, e, P);
-  if (curve.isInfinity(R) || math.jacobi(R.affineY) !== 1 || !R.affineX.equals(r)) {
+  if (R.curve.isInfinity(R) || math.jacobi(R.affineY) !== 1 || !R.affineX.equals(r)) {
     throw new Error('signature verification failed');
   }
 }

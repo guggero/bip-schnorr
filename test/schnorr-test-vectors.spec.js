@@ -215,7 +215,7 @@ describe('test vectors', () => {
       // when
       let result = false;
       try {
-        schnorr.verify(convert.pointToBuffer(X), m, signature);
+        schnorr.verify(X, m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -232,7 +232,7 @@ describe('test vectors', () => {
       // when
       let result = false;
       try {
-        schnorr.verify(convert.pointToBuffer(X), m, signature);
+        schnorr.verify(X, m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -249,7 +249,7 @@ describe('test vectors', () => {
       // when
       let result = false;
       try {
-        schnorr.verify(convert.pointToBuffer(X), m, signature);
+        schnorr.verify(X, m, signature);
         result = true;
       } catch (e) {
         result = false;
@@ -275,7 +275,7 @@ describe('test vectors', () => {
       } catch (e) {
         result = false;
       }
-      assert.strictEqual(convert.pointToBuffer(X).toString('hex'), '03690419f5aa0e720f5c6a0d52207c03320912c5fb8fbdf25adb241aff163acbfe');
+      assert.strictEqual(X.toString('hex'), '03690419f5aa0e720f5c6a0d52207c03320912c5fb8fbdf25adb241aff163acbfe');
       assert.strictEqual(result, true);
     });
   });

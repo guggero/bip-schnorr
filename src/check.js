@@ -112,7 +112,7 @@ function checkSignatureInput(r, s) {
 }
 
 function checkPointExists(pubKeyEven, P) {
-  if (curve.isInfinity(P)) {
+  if (P.curve.isInfinity(P)) {
     throw new Error('point is at infinity');
   }
   const pEven = P.affineY.isEven();
