@@ -1,4 +1,4 @@
-const bipSchnorr = require('../src/bip-schnorr');
+const schnorr = require('../src/schnorr');
 const Benchmark = require('benchmark');
 const microtime = require('microtime');
 const randomBytes = require('random-bytes');
@@ -19,7 +19,7 @@ function benchmarkSign(size, privateKeys, messages) {
   return function () {
     try {
       for (let i = 0; i < size; i++) {
-        const result = bipSchnorr.sign(privateKeys[i], messages[i]);
+        const result = schnorr.sign(privateKeys[i], messages[i]);
         if (!result || result.length !== 64) {
           console.error('Signing failed!');
         }
@@ -36,7 +36,7 @@ function benchmarkVerify(size, publicKeys, messages, signatures) {
   return function () {
     try {
       for (let i = 0; i < size; i++) {
-        bipSchnorr.verify(publicKeys[i], messages[i], signatures[i]);
+        schnorr.verify(publicKeys[i], messages[i], signatures[i]);
       }
       processedSignatures += size;
       numberOfRuns++;
@@ -49,7 +49,7 @@ function benchmarkVerify(size, publicKeys, messages, signatures) {
 function benchmarkBatchVerify(size, publicKeys, messages, signatures) {
   return function () {
     try {
-      bipSchnorr.batchVerify(publicKeys, messages, signatures);
+      schnorr.batchVerify(publicKeys, messages, signatures);
       processedSignatures += size;
       numberOfRuns++;
     } catch (e) {
@@ -61,7 +61,7 @@ function benchmarkBatchVerify(size, publicKeys, messages, signatures) {
 function benchmarkNaiveKeyAggregation(size, privateKeys, messages) {
   return function () {
     try {
-      const result = bipSchnorr.naiveKeyAggregation(privateKeys, messages[0]);
+      const result = schnorr.naiveKeyAggregation(privateKeys, messages[0]);
       if (!result || result.length !== 64) {
         console.error('Aggregating signatures failed!');
       }
@@ -76,7 +76,7 @@ function benchmarkNaiveKeyAggregation(size, privateKeys, messages) {
 function benchmarkMuSigNoInteractive(size, privateKeys, messages) {
   return function () {
     try {
-      const result = bipSchnorr.muSigNonInteractive(privateKeys, messages[0]);
+      const result = schnorr.muSigNonInteractive(privateKeys, messages[0]);
       if (!result || result.length !== 64) {
         console.error('Aggregating signatures failed!');
       }
@@ -127,7 +127,7 @@ BATCH_SIZES.forEach(size => {
     privateKeys[i] = randomInt(32);
     publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
     messages[i] = randomBuffer(32);
-    signatures[i] = bipSchnorr.sign(privateKeys[i], messages[i]);
+    signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
   }
   new Benchmark('Verify (batch size: ' + size + ')', benchmarkVerify(size, publicKeys, messages, signatures), {
     onStart,
@@ -145,7 +145,7 @@ BATCH_SIZES.forEach(size => {
     privateKeys[i] = randomInt(32);
     publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
     messages[i] = randomBuffer(32);
-    signatures[i] = bipSchnorr.sign(privateKeys[i], messages[i]);
+    signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
   }
   new Benchmark('Batch Verify (batch size: ' + size + ')', benchmarkBatchVerify(size, publicKeys, messages, signatures), {
     onStart,
@@ -163,7 +163,7 @@ BATCH_SIZES.forEach(size => {
     privateKeys[i] = randomInt(32);
     publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
     messages[i] = randomBuffer(32);
-    signatures[i] = bipSchnorr.sign(privateKeys[i], messages[i]);
+    signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
   }
   new Benchmark('Aggregate Signatures naive (batch size: ' + size + ')', benchmarkNaiveKeyAggregation(size, privateKeys, messages), {
     onStart,
@@ -181,7 +181,7 @@ BATCH_SIZES.forEach(size => {
     privateKeys[i] = randomInt(32);
     publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
     messages[i] = randomBuffer(32);
-    signatures[i] = bipSchnorr.sign(privateKeys[i], messages[i]);
+    signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
   }
   new Benchmark('Aggregate Signatures MuSig non-interactive (batch size: ' + size + ')', benchmarkMuSigNoInteractive(size, privateKeys, messages), {
     onStart,

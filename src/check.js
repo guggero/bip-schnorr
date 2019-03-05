@@ -7,49 +7,98 @@ const one = BigInteger.ONE;
 const n = curve.n;
 const p = curve.p;
 
-function checkVerifyParams(pubKey, message, signature, idx) {
+function checkBuffer(name, buf, len, idx) {
   const idxStr = (idx !== undefined ? '[' + idx + ']' : '');
-  if (!Buffer.isBuffer(pubKey)) {
-    throw new Error('pubKey' + idxStr + ' must be a Buffer');
+  if (!Buffer.isBuffer(buf)) {
+    throw new Error(name + idxStr + ' must be a Buffer');
   }
-  if (!Buffer.isBuffer(message)) {
-    throw new Error('message' + idxStr + ' must be a Buffer');
+  if (buf.length !== len) {
+    throw new Error(name + idxStr + ' must be ' + len + ' bytes long');
   }
-  if (!Buffer.isBuffer(signature)) {
-    throw new Error('signature' + idxStr + ' must be a Buffer');
+}
+
+function checkArray(name, arr) {
+  if (!arr || !arr.length) {
+    throw new Error(name + ' must be an array with one or more elements');
   }
-  if (pubKey.length !== 33) {
-    throw new Error('pubKey' + idxStr + ' must be 33 bytes long');
+}
+
+function checkPubKeyArr(pubKeys) {
+  checkArray('pubKeys', pubKeys);
+  for (let i = 0; i < pubKeys.length; i++) {
+    checkBuffer('pubKey', pubKeys[i], 33, i);
   }
-  if (message.length !== 32) {
-    throw new Error('message' + idxStr + ' must be 32 bytes long');
+}
+
+function checkMessageArr(messages) {
+  checkArray('messages', messages);
+  for (let i = 0; i < messages.length; i++) {
+    checkBuffer('message', messages[i], 32, i);
   }
-  if (signature.length !== 64) {
-    throw new Error('signature' + idxStr + ' must be 64 bytes long');
+}
+
+function checkSignatureArr(signatures) {
+  checkArray('signatures', signatures);
+  for (let i = 0; i < signatures.length; i++) {
+    checkBuffer('signature', signatures[i], 64, i);
   }
+}
+
+function checkNonceArr(nonces) {
+  checkArray('nonces', nonces);
+  for (let i = 0; i < nonces.length; i++) {
+    checkBuffer('nonce', nonces[i], 33, i);
+  }
+}
+
+function checkPrivateKey(privateKey, idx) {
+  const idxStr = (idx !== undefined ? '[' + idx + ']' : '');
+  if (!BigInteger.isBigInteger(privateKey)) {
+    throw new Error('privateKey' + idxStr + ' must be a BigInteger');
+  }
+  checkRange('privateKey', privateKey);
+}
+
+function checkPubKeysUnique(pubKeys) {
+  const serialized = pubKeys.map(pk => pk.toString('hex'));
+  const distinct = (value, index, self) => {
+    return self.indexOf(value) === index;
+  };
+  if (pubKeys.length !== serialized.filter(distinct).length) {
+    throw new Error('pubKeys must be an array with unique elements');
+  }
+}
+
+function checkSignParams(privateKey, message) {
+  checkPrivateKey(privateKey);
+  checkBuffer('message', message, 32);
+}
+
+function checkVerifyParams(pubKey, message, signature) {
+  checkBuffer('pubKey', pubKey, 33);
+  checkBuffer('message', message, 32);
+  checkBuffer('signature', signature, 64);
 }
 
 function checkBatchVerifyParams(pubKeys, messages, signatures) {
-  if (!pubKeys || !pubKeys.length) {
-    throw new Error('pubKeys must be an array with one or more elements');
-  }
-  if (!messages || !messages.length) {
-    throw new Error('messages must be an array with one or more elements');
-  }
-  if (!signatures || !signatures.length) {
-    throw new Error('signatures must be an array with one or more elements');
-  }
+  checkPubKeyArr(pubKeys);
+  checkMessageArr(messages);
+  checkSignatureArr(signatures);
   if (pubKeys.length !== messages.length || messages.length !== signatures.length) {
     throw new Error('all parameters must be an array with the same length')
   }
-  for (let i = 0; i < pubKeys.length; i++) {
-    checkVerifyParams(pubKeys[i], messages[i], signatures[i], i);
-  }
 }
 
-function checkRange(privateKey) {
-  if (privateKey.compareTo(one) < 0 || privateKey.compareTo(n.subtract(one)) > 0) {
-    throw new Error('privateKey must be an integer in the range 1..n-1')
+function checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell) {
+  checkSignParams(privateKey, message);
+  checkBuffer('sessionId', sessionId, 32);
+  checkBuffer('pubKeyCombined', pubKeyCombined, 33);
+  checkBuffer('ell', ell, 32);
+}
+
+function checkRange(name, scalar) {
+  if (scalar.compareTo(one) < 0 || scalar.compareTo(n.subtract(one)) > 0) {
+    throw new Error(name + ' must be an integer in the range 1..n-1')
   }
 }
 
@@ -63,7 +112,7 @@ function checkSignatureInput(r, s) {
 }
 
 function checkPointExists(pubKeyEven, P) {
-  if (curve.isInfinity(P)) {
+  if (P.curve.isInfinity(P)) {
     throw new Error('point is at infinity');
   }
   const pEven = P.affineY.isEven();
@@ -73,9 +122,15 @@ function checkPointExists(pubKeyEven, P) {
 }
 
 module.exports = {
+  checkSessionParams,
+  checkSignParams,
   checkVerifyParams,
   checkBatchVerifyParams,
   checkRange,
   checkSignatureInput,
   checkPointExists,
+  checkPubKeyArr,
+  checkPubKeysUnique,
+  checkArray,
+  checkNonceArr,
 };
