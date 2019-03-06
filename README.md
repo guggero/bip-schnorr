@@ -114,7 +114,6 @@ try {
 
 ```javascript
 const schnorr = require('bip-schnorr');
-const convert = schnorr.convert;
 
 // muSig non-interactive (not part of any BIP yet, see https://blockstream.com/2018/01/23/musig-key-aggregation-schnorr-signatures/)
 const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
