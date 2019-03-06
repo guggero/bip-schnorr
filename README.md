@@ -127,7 +127,7 @@ const publicKey1 = Buffer.from('02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECE
 const publicKey2 = Buffer.from('03FAC2114C2FBB091527EB7C64ECB11F8021CB45E8E7809D3C0938E4B8C0E5F84B', 'hex');
 const X = schnorr.muSig.pubKeyCombine([publicKey1, publicKey2]);
 try {
-  schnorr.verify(convert.pointToBuffer(X), message, aggregatedSignature);
+  schnorr.verify(X, message, aggregatedSignature);
   console.log('The signature is valid.');
 } catch (e) {
   console.error('The signature verification failed: ' + e);
