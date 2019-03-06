@@ -50,6 +50,8 @@ NOTE: All parameters are either of type `BigInteger` or `Buffer` (or an array of
 ### Schnorr
 
 ```javascript
+const Buffer = require('safe-buffer').Buffer; 
+const BigInteger = require('bigi');
 const schnorr = require('bip-schnorr');
 const convert = schnorr.convert;
 
@@ -113,6 +115,8 @@ try {
 ### muSig non-interactive
 
 ```javascript
+const Buffer = require('safe-buffer').Buffer; 
+const BigInteger = require('bigi');
 const schnorr = require('bip-schnorr');
 
 // muSig non-interactive (not part of any BIP yet, see https://blockstream.com/2018/01/23/musig-key-aggregation-schnorr-signatures/)
@@ -136,6 +140,8 @@ try {
 ### muSig
 
 ```javascript
+const Buffer = require('safe-buffer').Buffer; 
+const BigInteger = require('bigi');
 const randomBytes = require('random-bytes');
 const randomBuffer = (len) => Buffer.from(randomBytes.sync(len));
 const schnorr = require('bip-schnorr');
