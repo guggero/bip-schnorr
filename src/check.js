@@ -133,4 +133,5 @@ module.exports = {
   checkPubKeysUnique,
   checkArray,
   checkNonceArr,
+  checkPrivateKey,
 };

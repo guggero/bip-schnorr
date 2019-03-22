@@ -136,6 +136,8 @@ describe('test vectors', () => {
       } catch (e) {
         result = false;
       }
+
+      // then
       assert.strictEqual(result, true);
     });
 
@@ -152,6 +154,8 @@ describe('test vectors', () => {
       } catch (e) {
         result = false;
       }
+
+      // then
       assert.strictEqual(result, true);
     });
 
@@ -168,6 +172,8 @@ describe('test vectors', () => {
       } catch (e) {
         result = false;
       }
+
+      // then
       assert.strictEqual(result, true);
     });
 
@@ -220,6 +226,8 @@ describe('test vectors', () => {
       } catch (e) {
         result = false;
       }
+
+      // then
       assert.strictEqual(result, true);
     });
 
@@ -237,6 +245,8 @@ describe('test vectors', () => {
       } catch (e) {
         result = false;
       }
+
+      // then
       assert.strictEqual(result, true);
     });
 
@@ -254,6 +264,8 @@ describe('test vectors', () => {
       } catch (e) {
         result = false;
       }
+
+      // then
       assert.strictEqual(result, true);
     });
 

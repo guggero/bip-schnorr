@@ -321,6 +321,9 @@ a signature with parties not sharing their private key (see below).
 ### schnorr.muSig.computeEll(pubKeys : Buffer[]) : Buffer
 Generate `ell` which is the hash over all public keys participating in a muSig session.
 
+### schnorr.muSig.computeCoefficient(ell : Buffer, idx : number) : BigInteger
+Computes the MuSig coefficient `µ_i`.
+
 ### schnorr.muSig.pubKeyCombine(pubKeys : Buffer[], pubKeyHash : Buffer) : Buffer
 Creates the special rogue-key-resistant combined public key `P` by applying the MuSig coefficient
 to each public key `P_i` before adding them together.

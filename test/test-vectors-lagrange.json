@@ -1,0 +1,14 @@
+[
+  {
+    "indices": [0, 1],
+    "numSigners": 2,
+    "myIndex": 0,
+    "coefficient": "0000000000000000000000000000000000000000000000000000000000000002"
+  },
+  {
+    "indices": [0, 1],
+    "numSigners": 2,
+    "myIndex": 1,
+    "coefficient": "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140"
+  }
+]

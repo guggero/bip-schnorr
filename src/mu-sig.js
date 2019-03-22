@@ -165,6 +165,7 @@ function partialSigCombine(nonceCombined, partialSigs) {
 module.exports = {
   nonInteractive,
   computeEll,
+  computeCoefficient,
   pubKeyCombine,
   sessionInitialize,
   sessionNonceCombine,
