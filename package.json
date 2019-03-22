@@ -31,12 +31,12 @@
   "dependencies": {
     "ecurve": "^1.0.6",
     "js-sha256": "^0.9.0",
-    "safe-buffer": "^5.0.1",
-    "random-bytes": "^1.0.0"
+    "random-bytes": "^1.0.0",
+    "safe-buffer": "^5.0.1"
   },
   "devDependencies": {
     "benchmark": "^2.1.4",
-    "coveralls": "^3.0.0",
+    "coveralls": "^3.0.3",
     "microtime": "^3.0.0",
     "mocha": "^6.0.2",
     "nyc": "^13.3.0"
