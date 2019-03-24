@@ -56,7 +56,12 @@ function keySplit(privateKey, k, n) {
 
 function verifyShard(privKey, signingPubkey, numSignersTotal, ell, continuing, shard, myIndex, otherIndex, pubCoefficients, numSigners) {
   const coefficient = muSig.computeCoefficient(ell, otherIndex);
-  // TODO implement
+
+  for (let i = 0; i < numSignersTotal, i++) {
+    let idx = BigInteger.valueOf(i + 1);
+    let idxn = one;
+    // TODO implement
+  }
 }
 
 function lagrangeCoefficient(indices, numSigners, coefficientIndex) {
@@ -88,7 +93,7 @@ function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, 
     idx,
   };
   const coefficient = lagrangeCoefficient(indices, numSigners, idx);
-  session.secretKey = privateKey.multiply(coefficient).mod(n);
+  session.secretKey = privateKey.multiply(coefficient).mod(curve.n);
   const nonceData = concat([convert.intToBuffer(privateKey), sessionId, message, pubKeyCombined]);
   session.secretNonce = convert.bufferToInt(convert.hash(nonceData));
   check.checkRange('secretNonce', session.secretNonce);
