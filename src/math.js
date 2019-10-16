@@ -29,8 +29,13 @@ function jacobi(num) {
   return num.modPow(p.subtract(one).divide(two), p).intValue();
 }
 
+function jacobiPoint(point) {
+  const jacobiCheckInt = point.y.multiply(point.z).mod(p); // optimization over point.affineY
+  return jacobi(jacobiCheckInt);
+}
+
 function getK(R, k0) {
-  return jacobi(R.affineY) === 1 ? k0 : n.subtract(k0);
+  return jacobiPoint(R) === 1 ? k0 : n.subtract(k0);
 }
 
 function getE(Rx, P, m) {
