@@ -5,7 +5,7 @@ const BigInteger = require('bigi');
 const schnorr = require('../src/schnorr');
 const convert = require('../src/convert');
 const muSig = require('../src/mu-sig');
-const randomBytes = require('random-bytes');
+const randomBytes = require('randombytes');
 const ecurve = require('ecurve');
 
 const curve = ecurve.getCurveByName('secp256k1');
@@ -15,8 +15,8 @@ const n = curve.n;
 const NUM_RANDOM_TESTS = 64;
 const RANDOM_TEST_TIMEOUT = 20000;
 
-const randomInt = (len) => BigInteger.fromBuffer(Buffer.from(randomBytes.sync(len))).mod(n);
-const randomBuffer = (len) => Buffer.from(randomBytes.sync(len));
+const randomInt = (len) => BigInteger.fromBuffer(Buffer.from(randomBytes(len))).mod(n);
+const randomBuffer = (len) => Buffer.from(randomBytes(len));
 
 describe('random tests', () => {
   describe('verify', () => {

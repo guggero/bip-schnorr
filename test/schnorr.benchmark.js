@@ -1,7 +1,7 @@
 const schnorr = require('../src/schnorr');
 const Benchmark = require('benchmark');
 const microtime = require('microtime');
-const randomBytes = require('random-bytes');
+const randomBytes = require('randombytes');
 const BigInteger = require('bigi');
 const Buffer = require('safe-buffer').Buffer;
 const ecurve = require('ecurve');
@@ -88,8 +88,8 @@ function benchmarkMuSigNoInteractive(size, privateKeys, messages) {
   }
 }
 
-const randomInt = (len) => BigInteger.fromBuffer(Buffer.from(randomBytes.sync(len))).mod(n);
-const randomBuffer = (len) => Buffer.from(randomBytes.sync(len));
+const randomInt = (len) => BigInteger.fromBuffer(Buffer.from(randomBytes(len))).mod(n);
+const randomBuffer = (len) => Buffer.from(randomBytes(len));
 
 const onStart = () => {
   startTime = microtime.now();

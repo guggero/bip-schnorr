@@ -1,7 +1,7 @@
 const BigInteger = require('bigi');
 const Buffer = require('safe-buffer').Buffer;
 const ecurve = require('ecurve');
-const randomBytes = require('random-bytes');
+const randomBytes = require('randombytes');
 const curve = ecurve.getCurveByName('secp256k1');
 const check = require('./check');
 const convert = require('./convert');
@@ -51,7 +51,7 @@ function getR(s, e, P) {
 function randomA() {
   let a = null;
   for (; ;) {
-    a = convert.bufferToInt(Buffer.from(randomBytes.sync(32)));
+    a = convert.bufferToInt(Buffer.from(randomBytes(32)));
     try {
       check.checkRange('a', a);
       return a;

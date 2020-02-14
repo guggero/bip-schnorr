@@ -5,11 +5,11 @@ const BigInteger = require('bigi');
 const convert = require('../src/convert');
 const muSig = require('../src/mu-sig');
 const schnorr = require('../src/schnorr');
-const randomBytes = require('random-bytes');
+const randomBytes = require('randombytes');
 
 const testVectors = require('./test-vectors-mu-sig.json');
 
-const randomBuffer = (len) => Buffer.from(randomBytes.sync(len));
+const randomBuffer = (len) => Buffer.from(randomBytes(len));
 
 describe('muSig', () => {
   describe('pubKeyCombine', () => {
