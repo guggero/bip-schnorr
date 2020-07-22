@@ -1,4 +1,4 @@
-const schnorr = require('../src/schnorr');
+const schnorr = require('../src/index');
 const Benchmark = require('benchmark');
 const microtime = require('microtime');
 const randomBytes = require('randombytes');
@@ -76,7 +76,7 @@ function benchmarkNaiveKeyAggregation(size, privateKeys, messages) {
 function benchmarkMuSigNoInteractive(size, privateKeys, messages) {
   return function () {
     try {
-      const result = schnorr.muSigNonInteractive(privateKeys, messages[0]);
+      const result = schnorr.muSig.nonInteractive(privateKeys, messages[0]);
       if (!result || result.length !== 64) {
         console.error('Aggregating signatures failed!');
       }
