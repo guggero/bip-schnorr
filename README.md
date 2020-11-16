@@ -8,6 +8,8 @@
 [![Dependency Status](https://david-dm.org/guggero/bip-schnorr.svg)](https://david-dm.org/guggero/bip-schnorr)
 [![devDependency Status](https://david-dm.org/guggero/bip-schnorr/dev-status.svg)](https://david-dm.org/guggero/bip-schnorr#info=devDependencies)
 
+**NOTE: This code is based on an early draft of the Shnorr BIP and is currently not compatible with what's implemented in Bitcoin Core anymore**. Contributions to restore compatibility are very welcome!
+
 This is a pure JavaScript implementation of the standard 64-byte Schnorr signature
 scheme over the elliptic curve *secp256k1* and its application in the
 `MuSig` [multi-signature scheme proposed by Blockstream](https://blockstream.com/2018/01/23/musig-key-aggregation-schnorr-signatures/).
