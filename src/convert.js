@@ -5,6 +5,8 @@ const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const check = require('./check');
 
+const G = curve.G;
+
 function bufferToInt(buffer) {
   return BigInteger.fromBuffer(buffer);
 }
@@ -28,10 +30,15 @@ function pubKeyToPoint(pubKey) {
   return P;
 }
 
+function pubKeyFromPrivate(privateKey) {
+  return pointToBuffer(G.multiply(privateKey));
+}
+
 module.exports = {
   bufferToInt,
   intToBuffer,
   hash,
   pointToBuffer,
   pubKeyToPoint,
+  pubKeyFromPrivate
 };
