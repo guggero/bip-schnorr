@@ -18,14 +18,13 @@ function hash(buffer) {
 }
 
 function pointToBuffer(point) {
-  return point.getEncoded(true);
+  return point.getEncoded(true).slice(1);
 }
 
 function pubKeyToPoint(pubKey) {
-  const pubKeyEven = (pubKey[0] - 0x02) === 0;
-  const x = bufferToInt(pubKey.slice(1, 33));
-  const P = curve.pointFromX(!pubKeyEven, x);
-  check.checkPointExists(pubKeyEven, P);
+  const x = bufferToInt(pubKey);
+  const P = curve.pointFromX(false, x);
+  check.checkPointExists(true, P);
   return P;
 }
 

@@ -15,15 +15,16 @@ const testVectors = require('./test-vectors-schnorr.json');
 describe('test vectors', () => {
   describe('sign', () => {
     testVectors
-      .filter(vec => vec.d !== null)
+      .filter(vec => vec.d !== "")
       .forEach(vec => {
         it('can sign ' + vec.d, () => {
           // given
           const d = BigInteger.fromHex(vec.d);
           const m = Buffer.from(vec.m, 'hex');
+          const a = Buffer.from(vec.aux, 'hex');
 
           // when
-          const result = schnorr.sign(d, m);
+          const result = schnorr.sign(d, m, a);
 
           // then
           assert.strictEqual(result.toString('hex'), vec.sig.toLowerCase());
@@ -53,9 +54,6 @@ describe('test vectors', () => {
 
           // then
           assert.strictEqual(result, expectedResult, error);
-          if (!expectedResult) {
-            assert.strictEqual(error.message, vec.expectedError);
-          }
         });
       });
   });

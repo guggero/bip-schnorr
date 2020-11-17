@@ -17,28 +17,55 @@ const three = BigInteger.valueOf(3);
 const four = BigInteger.valueOf(4);
 const seven = BigInteger.valueOf(7);
 
-function sign(privateKey, message) {
-  // https://github.com/sipa/bips/blob/bip-schnorr/bip-schnorr.mediawiki#signing
-  const k0 = math.deterministicGetK0(privateKey, message);
+function sign(privateKey, message, aux) {
+  // https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#signing
+
+  // d0 = privateKey
+  if (privateKey.compareTo(one) < 0 || privateKey.compareTo(n.subtract(one)) > 0) {
+    throw new Error('the private key must be an integer in the range 1..n-1');
+  }
+
+  const P = G.multiply(privateKey);
+  var d;
+  if (P.affineY.and(one).equals(zero)) {
+    d = privateKey.clone();
+  } else {
+    d = n.subtract(privateKey);
+  }
+
+  var k0
+  if (aux) {
+    if (aux.length !== 32) {
+      throw new Error('aux must be 32 bytes, not ' + aux.length);
+    }
+
+    let t = d.xor(convert.bufferToInt(math.taggedHash('BIP0340/aux', aux)));
+    k0 = convert.bufferToInt(math.taggedHash('BIP0340/nonce', concat([convert.intToBuffer(t), convert.intToBuffer(P.affineX), message]))).mod(n);
+  } else {
+    k0 = math.deterministicGetK0(d, message);
+  }
+  if (k0.signum() === 0) {
+    throw new Error('k0 is zero');
+  }
+
   const R = G.multiply(k0);
   const k = math.getK(R, k0);
-  const P = G.multiply(privateKey);
   const Rx = convert.intToBuffer(R.affineX);
   const e = math.getE(Rx, P, message);
-  return concat([Rx, convert.intToBuffer(k.add(e.multiply(privateKey)).mod(n))]);
+  return concat([Rx, convert.intToBuffer(k.add(e.multiply(d)).mod(n))]);
 }
 
 function verify(pubKey, message, signature) {
   check.checkVerifyParams(pubKey, message, signature);
 
-  // https://github.com/sipa/bips/blob/bip-schnorr/bip-schnorr.mediawiki#verification
+  // https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#verification
   const P = convert.pubKeyToPoint(pubKey);
   const r = convert.bufferToInt(signature.slice(0, 32));
   const s = convert.bufferToInt(signature.slice(32, 64));
   check.checkSignatureInput(r, s);
   const e = math.getE(convert.intToBuffer(r), P, message);
   const R = math.getR(s, e, P);
-  if (R.curve.isInfinity(R) || math.jacobi(R.affineY) !== 1 || !R.affineX.equals(r)) {
+  if (R.curve.isInfinity(R) || R.affineY.and(one).equals(one) || !R.affineX.equals(r)) {
     throw new Error('signature verification failed');
   }
 }
@@ -46,7 +73,7 @@ function verify(pubKey, message, signature) {
 function batchVerify(pubKeys, messages, signatures) {
   check.checkBatchVerifyParams(pubKeys, messages, signatures);
 
-  // https://github.com/sipa/bips/blob/bip-schnorr/bip-schnorr.mediawiki#Batch_Verification
+  // https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#Batch_Verification
   let leftSide = zero;
   let rightSide = null;
   for (let i = 0; i < pubKeys.length; i++) {

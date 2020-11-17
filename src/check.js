@@ -26,7 +26,7 @@ function checkArray(name, arr) {
 function checkPubKeyArr(pubKeys) {
   checkArray('pubKeys', pubKeys);
   for (let i = 0; i < pubKeys.length; i++) {
-    checkBuffer('pubKey', pubKeys[i], 33, i);
+    checkBuffer('pubKey', pubKeys[i], 32, i);
   }
 }
 
@@ -47,7 +47,7 @@ function checkSignatureArr(signatures) {
 function checkNonceArr(nonces) {
   checkArray('nonces', nonces);
   for (let i = 0; i < nonces.length; i++) {
-    checkBuffer('nonce', nonces[i], 33, i);
+    checkBuffer('nonce', nonces[i], 32, i);
   }
 }
 
@@ -75,7 +75,7 @@ function checkSignParams(privateKey, message) {
 }
 
 function checkVerifyParams(pubKey, message, signature) {
-  checkBuffer('pubKey', pubKey, 33);
+  checkBuffer('pubKey', pubKey, 32);
   checkBuffer('message', message, 32);
   checkBuffer('signature', signature, 64);
 }
@@ -92,7 +92,7 @@ function checkBatchVerifyParams(pubKeys, messages, signatures) {
 function checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell) {
   checkSignParams(privateKey, message);
   checkBuffer('sessionId', sessionId, 32);
-  checkBuffer('pubKeyCombined', pubKeyCombined, 33);
+  checkBuffer('pubKeyCombined', pubKeyCombined, 32);
   checkBuffer('ell', ell, 32);
 }
 
