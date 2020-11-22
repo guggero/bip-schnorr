@@ -3,7 +3,6 @@ const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
 const schnorr = require('../src/schnorr');
-const muSig = require('../src/mu-sig');
 const ecurve = require('ecurve');
 
 const curve = ecurve.getCurveByName('secp256k1');
@@ -61,22 +60,6 @@ describe('edge cases', () => {
       try { schnorr.batchVerify([pubKey], [m], ['foo']); } catch (e) { assertError(e, 'signature[0] must be a Buffer'); }
       try { schnorr.batchVerify([pubKey], [m.slice(0, 16)], [sig]); } catch (e) { assertError(e, 'message[0] must be 32 bytes long'); }
       try { schnorr.batchVerify([pubKey], [m], [sig.slice(32)]); } catch (e) { assertError(e, 'signature[0] must be 64 bytes long'); }
-    });
-  });
-
-  describe('naiveKeyAggregation', () => {
-    it('can check parameters', () => {
-      // when / then
-      try { schnorr.naiveKeyAggregation(null, m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
-      try { schnorr.naiveKeyAggregation([], m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
-    });
-  });
-
-  describe('muSig.nonInteractive', () => {
-    it('can check parameters', () => {
-      // when / then
-      try { muSig.nonInteractive(null, m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
-      try { muSig.nonInteractive([], m); } catch (e) { assertError(e, 'privateKeys must be an array with one or more elements'); }
     });
   });
 });

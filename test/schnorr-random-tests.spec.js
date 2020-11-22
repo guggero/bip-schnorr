@@ -4,7 +4,6 @@ const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
 const schnorr = require('../src/schnorr');
 const convert = require('../src/convert');
-const muSig = require('../src/mu-sig');
 const randomBytes = require('randombytes');
 const ecurve = require('ecurve');
 

@@ -3,12 +3,7 @@ const assert = require('assert');
 const Buffer = require('safe-buffer').Buffer;
 const BigInteger = require('bigi');
 const schnorr = require('../src/schnorr');
-const muSig = require('../src/mu-sig');
-const convert = require('../src/convert');
 const ecurve = require('ecurve');
-
-const curve = ecurve.getCurveByName('secp256k1');
-const G = curve.G;
 
 const testVectors = require('./test-vectors-schnorr.json');
 
