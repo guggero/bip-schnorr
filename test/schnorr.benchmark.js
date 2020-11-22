@@ -58,36 +58,6 @@ function benchmarkBatchVerify(size, publicKeys, messages, signatures) {
   };
 }
 
-function benchmarkNaiveKeyAggregation(size, privateKeys, messages) {
-  return function () {
-    try {
-      const result = schnorr.naiveKeyAggregation(privateKeys, messages[0]);
-      if (!result || result.length !== 64) {
-        console.error('Aggregating signatures failed!');
-      }
-      processedSignatures += size;
-      numberOfRuns++;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-}
-
-function benchmarkMuSigNoInteractive(size, privateKeys, messages) {
-  return function () {
-    try {
-      const result = schnorr.muSig.nonInteractive(privateKeys, messages[0]);
-      if (!result || result.length !== 64) {
-        console.error('Aggregating signatures failed!');
-      }
-      processedSignatures += size;
-      numberOfRuns++;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-}
-
 const randomInt = (len) => BigInteger.fromBuffer(Buffer.from(randomBytes(len))).mod(n);
 const randomBuffer = (len) => Buffer.from(randomBytes(len));
 
@@ -125,7 +95,7 @@ BATCH_SIZES.forEach(size => {
   const signatures = new Array(size);
   for (let i = 0; i < size; i++) {
     privateKeys[i] = randomInt(32);
-    publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
+    publicKeys[i] = schnorr.convert.bip340PointToBuffer(G.multiply(privateKeys[i]));
     messages[i] = randomBuffer(32);
     signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
   }
@@ -143,47 +113,11 @@ BATCH_SIZES.forEach(size => {
   const signatures = new Array(size);
   for (let i = 0; i < size; i++) {
     privateKeys[i] = randomInt(32);
-    publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
+    publicKeys[i] = schnorr.convert.bip340PointToBuffer(G.multiply(privateKeys[i]));
     messages[i] = randomBuffer(32);
     signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
   }
   new Benchmark('Batch Verify (batch size: ' + size + ')', benchmarkBatchVerify(size, publicKeys, messages, signatures), {
-    onStart,
-    onComplete,
-  }).run();
-});
-
-// Aggregate Signatures (naive)
-BATCH_SIZES.forEach(size => {
-  const privateKeys = new Array(size);
-  const publicKeys = new Array(size);
-  const messages = new Array(size);
-  const signatures = new Array(size);
-  for (let i = 0; i < size; i++) {
-    privateKeys[i] = randomInt(32);
-    publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
-    messages[i] = randomBuffer(32);
-    signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
-  }
-  new Benchmark('Aggregate Signatures naive (batch size: ' + size + ')', benchmarkNaiveKeyAggregation(size, privateKeys, messages), {
-    onStart,
-    onComplete,
-  }).run();
-});
-
-// Aggregate Signatures (MuSig non-interactive)
-BATCH_SIZES.forEach(size => {
-  const privateKeys = new Array(size);
-  const publicKeys = new Array(size);
-  const messages = new Array(size);
-  const signatures = new Array(size);
-  for (let i = 0; i < size; i++) {
-    privateKeys[i] = randomInt(32);
-    publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
-    messages[i] = randomBuffer(32);
-    signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
-  }
-  new Benchmark('Aggregate Signatures MuSig non-interactive (batch size: ' + size + ')', benchmarkMuSigNoInteractive(size, privateKeys, messages), {
     onStart,
     onComplete,
   }).run();

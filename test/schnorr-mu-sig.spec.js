@@ -139,6 +139,7 @@ describe('muSig', () => {
     });
   });
 
+  /* TODO(guggero): Enable after updating to MuSig 2
   describe('full example', () => {
     it('can sign and verify example in README', () => {
       // data known to every participant
@@ -281,5 +282,5 @@ describe('muSig', () => {
       // -----------------------------------------------------------------------
       schnorr.verify(publicData.pubKeyCombined, publicData.message, publicData.signature);
     });
-  });
+  });*/
 });

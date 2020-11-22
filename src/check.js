@@ -30,6 +30,13 @@ function checkPubKeyArr(pubKeys) {
   }
 }
 
+function bip340CheckPubKeyArr(pubKeys) {
+  checkArray('pubKeys', pubKeys);
+  for (let i = 0; i < pubKeys.length; i++) {
+    checkBuffer('pubKey', pubKeys[i], 32, i);
+  }
+}
+
 function checkMessageArr(messages) {
   checkArray('messages', messages);
   for (let i = 0; i < messages.length; i++) {
@@ -75,13 +82,13 @@ function checkSignParams(privateKey, message) {
 }
 
 function checkVerifyParams(pubKey, message, signature) {
-  checkBuffer('pubKey', pubKey, 33);
+  checkBuffer('pubKey', pubKey, 32);
   checkBuffer('message', message, 32);
   checkBuffer('signature', signature, 64);
 }
 
 function checkBatchVerifyParams(pubKeys, messages, signatures) {
-  checkPubKeyArr(pubKeys);
+  bip340CheckPubKeyArr(pubKeys);
   checkMessageArr(messages);
   checkSignatureArr(signatures);
   if (pubKeys.length !== messages.length || messages.length !== signatures.length) {
@@ -92,7 +99,7 @@ function checkBatchVerifyParams(pubKeys, messages, signatures) {
 function checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell) {
   checkSignParams(privateKey, message);
   checkBuffer('sessionId', sessionId, 32);
-  checkBuffer('pubKeyCombined', pubKeyCombined, 33);
+  checkBuffer('pubKeyCombined', pubKeyCombined, 32);
   checkBuffer('ell', ell, 32);
 }
 
@@ -121,6 +128,12 @@ function checkPointExists(pubKeyEven, P) {
   }
 }
 
+function checkAux(aux) {
+  if (aux.length !== 32) {
+    throw new Error('aux must be 32 bytes');
+  }
+}
+
 module.exports = {
   checkSessionParams,
   checkSignParams,
@@ -130,7 +143,7 @@ module.exports = {
   checkSignatureInput,
   checkPointExists,
   checkPubKeyArr,
-  checkPubKeysUnique,
   checkArray,
   checkNonceArr,
+  checkAux,
 };

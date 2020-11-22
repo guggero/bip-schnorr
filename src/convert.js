@@ -5,6 +5,8 @@ const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const check = require('./check');
 
+const G = curve.G;
+
 function bufferToInt(buffer) {
   return BigInteger.fromBuffer(buffer);
 }
@@ -21,6 +23,10 @@ function pointToBuffer(point) {
   return point.getEncoded(true);
 }
 
+function bip340PointToBuffer(point) {
+  return point.getEncoded(true).slice(1);
+}
+
 function pubKeyToPoint(pubKey) {
   const pubKeyEven = (pubKey[0] - 0x02) === 0;
   const x = bufferToInt(pubKey.slice(1, 33));
@@ -29,10 +35,15 @@ function pubKeyToPoint(pubKey) {
   return P;
 }
 
+function pubKeyFromPrivate(privateKey) {
+  return pointToBuffer(G.multiply(privateKey));
+}
+
 module.exports = {
   bufferToInt,
   intToBuffer,
   hash,
   pointToBuffer,
+  bip340PointToBuffer,
   pubKeyToPoint,
 };
