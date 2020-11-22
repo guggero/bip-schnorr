@@ -27,7 +27,7 @@ describe('random tests', () => {
       const messages = [];
       for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
         const d = randomInt(32);
-        const pubKey = convert.pointToBuffer(G.multiply(d));
+        const pubKey = convert.bip340PointToBuffer(G.multiply(d));
         const message = randomBuffer(32);
         privateKeys.push(d);
         pubKeys.push(pubKey);
@@ -62,7 +62,7 @@ describe('random tests', () => {
       const signatures = [];
       for (let i = 0; i < NUM_RANDOM_TESTS; i++) {
         const d = randomInt(32);
-        const pubKey = convert.pointToBuffer(G.multiply(d));
+        const pubKey = convert.bip340PointToBuffer(G.multiply(d));
         const message = randomBuffer(32);
         const signature = schnorr.sign(d, message);
         pubKeys.push(pubKey);

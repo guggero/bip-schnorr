@@ -354,44 +354,30 @@ the combined public key `P`.
 
 The code is not yet optimized for performance.
 
-The following results were achieved on an Intel Core i7-6500U running on linux/amd64 with node v10.15.0:
+The following results were achieved on an Intel Core i7-6500U running on linux/amd64 with node v10.23.0:
 
 ```text
 $ node test/schnorr.benchmark.js
-Sign (batch size: 1) x 29.81 ops/sec ±2.23% (53 runs sampled) 35344 us/op 28 sig/s
-Sign (batch size: 2) x 15.28 ops/sec ±1.99% (42 runs sampled) 67103 us/op 30 sig/s
-Sign (batch size: 4) x 7.51 ops/sec ±1.98% (23 runs sampled) 134388 us/op 30 sig/s
-Sign (batch size: 8) x 3.83 ops/sec ±2.27% (14 runs sampled) 260547 us/op 31 sig/s
-Sign (batch size: 16) x 1.92 ops/sec ±0.99% (9 runs sampled) 525121 us/op 30 sig/s
-Sign (batch size: 32) x 0.96 ops/sec ±2.78% (7 runs sampled) 1044533 us/op 31 sig/s
-Sign (batch size: 64) x 0.48 ops/sec ±1.51% (6 runs sampled) 2072564 us/op 31 sig/s
-Verify (batch size: 1) x 29.96 ops/sec ±0.77% (53 runs sampled) 34513 us/op 29 sig/s
-Verify (batch size: 2) x 15.30 ops/sec ±0.70% (42 runs sampled) 67126 us/op 30 sig/s
-Verify (batch size: 4) x 7.64 ops/sec ±1.03% (23 runs sampled) 132236 us/op 30 sig/s
-Verify (batch size: 8) x 3.85 ops/sec ±1.02% (14 runs sampled) 261091 us/op 31 sig/s
-Verify (batch size: 16) x 1.93 ops/sec ±0.53% (9 runs sampled) 519554 us/op 31 sig/s
-Verify (batch size: 32) x 0.97 ops/sec ±0.64% (7 runs sampled) 1033222 us/op 31 sig/s
-Verify (batch size: 64) x 0.48 ops/sec ±0.69% (6 runs sampled) 2079248 us/op 31 sig/s
-Batch Verify (batch size: 1) x 30.55 ops/sec ±0.93% (54 runs sampled) 33736 us/op 30 sig/s
-Batch Verify (batch size: 2) x 12.35 ops/sec ±0.88% (35 runs sampled) 82398 us/op 24 sig/s
-Batch Verify (batch size: 4) x 5.64 ops/sec ±1.25% (18 runs sampled) 178555 us/op 22 sig/s
-Batch Verify (batch size: 8) x 2.71 ops/sec ±0.83% (11 runs sampled) 370195 us/op 22 sig/s
-Batch Verify (batch size: 16) x 1.32 ops/sec ±0.72% (8 runs sampled) 760835 us/op 21 sig/s
-Batch Verify (batch size: 32) x 0.66 ops/sec ±0.52% (6 runs sampled) 1523772 us/op 21 sig/s
-Batch Verify (batch size: 64) x 0.33 ops/sec ±0.41% (5 runs sampled) 3061443 us/op 21 sig/s
-Aggregate Signatures naive (batch size: 1) x 31.36 ops/sec ±0.76% (55 runs sampled) 33094 us/op 30 sig/s
-Aggregate Signatures naive (batch size: 2) x 15.49 ops/sec ±0.83% (42 runs sampled) 66253 us/op 30 sig/s
-Aggregate Signatures naive (batch size: 4) x 7.80 ops/sec ±1.06% (24 runs sampled) 128978 us/op 31 sig/s
-Aggregate Signatures naive (batch size: 8) x 3.97 ops/sec ±0.22% (14 runs sampled) 254682 us/op 31 sig/s
-Aggregate Signatures naive (batch size: 16) x 1.95 ops/sec ±0.78% (9 runs sampled) 515667 us/op 31 sig/s
-Aggregate Signatures naive (batch size: 32) x 0.98 ops/sec ±0.53% (7 runs sampled) 1023110 us/op 31 sig/s
-Aggregate Signatures naive (batch size: 64) x 0.49 ops/sec ±0.60% (6 runs sampled) 2038238 us/op 31 sig/s
-Aggregate Signatures MuSig non-interactive (batch size: 1) x 19.99 ops/sec ±1.07% (37 runs sampled) 51157 us/op 20 sig/s
-Aggregate Signatures MuSig non-interactive (batch size: 2) x 9.91 ops/sec ±1.68% (29 runs sampled) 102176 us/op 20 sig/s
-Aggregate Signatures MuSig non-interactive (batch size: 4) x 4.99 ops/sec ±1.23% (17 runs sampled) 201754 us/op 20 sig/s
-Aggregate Signatures MuSig non-interactive (batch size: 8) x 2.51 ops/sec ±0.75% (11 runs sampled) 400945 us/op 20 sig/s
-Aggregate Signatures MuSig non-interactive (batch size: 16) x 1.26 ops/sec ±0.72% (8 runs sampled) 792623 us/op 20 sig/s
-Aggregate Signatures MuSig non-interactive (batch size: 32) x 0.62 ops/sec ±2.60% (6 runs sampled) 1618385 us/op 20 sig/s
-Aggregate Signatures MuSig non-interactive (batch size: 64) x 0.32 ops/sec ±0.71% (5 runs sampled) 3171948 us/op 20 sig/s
-Done in 422.45s.
+Sign (batch size: 1) x 26.12 ops/sec ±2.68% (47 runs sampled) 40291 us/op 25 sig/s
+Sign (batch size: 2) x 13.36 ops/sec ±0.88% (37 runs sampled) 77550 us/op 26 sig/s
+Sign (batch size: 4) x 6.78 ops/sec ±1.33% (21 runs sampled) 149622 us/op 27 sig/s
+Sign (batch size: 8) x 3.38 ops/sec ±0.93% (13 runs sampled) 297823 us/op 27 sig/s
+Sign (batch size: 16) x 1.69 ops/sec ±0.51% (9 runs sampled) 591927 us/op 27 sig/s
+Sign (batch size: 32) x 0.85 ops/sec ±0.27% (7 runs sampled) 1177938 us/op 27 sig/s
+Sign (batch size: 64) x 0.42 ops/sec ±0.63% (6 runs sampled) 2383795 us/op 27 sig/s
+Verify (batch size: 1) x 26.22 ops/sec ±0.76% (47 runs sampled) 39417 us/op 25 sig/s
+Verify (batch size: 2) x 13.04 ops/sec ±0.57% (36 runs sampled) 78548 us/op 25 sig/s
+Verify (batch size: 4) x 6.57 ops/sec ±0.83% (21 runs sampled) 153775 us/op 26 sig/s
+Verify (batch size: 8) x 3.28 ops/sec ±0.60% (13 runs sampled) 305802 us/op 26 sig/s
+Verify (batch size: 16) x 1.65 ops/sec ±0.58% (9 runs sampled) 605158 us/op 26 sig/s
+Verify (batch size: 32) x 0.83 ops/sec ±0.70% (7 runs sampled) 1214640 us/op 26 sig/s
+Verify (batch size: 64) x 0.41 ops/sec ±0.45% (6 runs sampled) 2428993 us/op 26 sig/s
+Batch Verify (batch size: 1) x 25.84 ops/sec ±0.82% (47 runs sampled) 39838 us/op 25 sig/s
+Batch Verify (batch size: 2) x 8.80 ops/sec ±1.02% (26 runs sampled) 115088 us/op 17 sig/s
+Batch Verify (batch size: 4) x 4.39 ops/sec ±0.64% (15 runs sampled) 231074 us/op 17 sig/s
+Batch Verify (batch size: 8) x 2.20 ops/sec ±0.36% (10 runs sampled) 457815 us/op 17 sig/s
+Batch Verify (batch size: 16) x 1.10 ops/sec ±0.56% (7 runs sampled) 909321 us/op 18 sig/s
+Batch Verify (batch size: 32) x 0.55 ops/sec ±0.28% (6 runs sampled) 1825425 us/op 18 sig/s
+Batch Verify (batch size: 64) x 0.26 ops/sec ±7.04% (5 runs sampled) 3832114 us/op 17 sig/s
+Done in 279.18s.
 ```

@@ -37,12 +37,12 @@ describe('edge cases', () => {
     it('can check verify params', () => {
       // when / then
       try { schnorr.verify('foo', m, sig); } catch (e) { assertError(e, 'pubKey must be a Buffer'); }
-      try { schnorr.verify(Buffer.from([]), m, sig); } catch (e) { assertError(e, 'pubKey must be 33 bytes long'); }
+      try { schnorr.verify(Buffer.from([]), m, sig); } catch (e) { assertError(e, 'pubKey must be 32 bytes long'); }
       try { schnorr.verify(pubKey, 'foo', sig); } catch (e) { assertError(e, 'message must be a Buffer'); }
       try { schnorr.verify(pubKey, m, 'foo'); } catch (e) { assertError(e, 'signature must be a Buffer'); }
       try { schnorr.verify(pubKey, m.slice(0, 16), sig); } catch (e) { assertError(e, 'message must be 32 bytes long'); }
       try { schnorr.verify(pubKey, m, sig.slice(32)); } catch (e) { assertError(e, 'signature must be 64 bytes long'); }
-      try { schnorr.verify(pubKey.slice(16), m, sig); } catch (e) { assertError(e, 'pubKey must be 33 bytes long'); }
+      try { schnorr.verify(pubKey.slice(16), m, sig); } catch (e) { assertError(e, 'pubKey must be 32 bytes long'); }
     });
   });
 

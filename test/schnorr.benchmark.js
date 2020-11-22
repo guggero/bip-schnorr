@@ -125,7 +125,7 @@ BATCH_SIZES.forEach(size => {
   const signatures = new Array(size);
   for (let i = 0; i < size; i++) {
     privateKeys[i] = randomInt(32);
-    publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
+    publicKeys[i] = schnorr.convert.bip340PointToBuffer(G.multiply(privateKeys[i]));
     messages[i] = randomBuffer(32);
     signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
   }
@@ -143,7 +143,7 @@ BATCH_SIZES.forEach(size => {
   const signatures = new Array(size);
   for (let i = 0; i < size; i++) {
     privateKeys[i] = randomInt(32);
-    publicKeys[i] = G.multiply(privateKeys[i]).getEncoded(true);
+    publicKeys[i] = schnorr.convert.bip340PointToBuffer(G.multiply(privateKeys[i]));
     messages[i] = randomBuffer(32);
     signatures[i] = schnorr.sign(privateKeys[i], messages[i]);
   }
