@@ -1,4 +1,4 @@
-# Pure JavaScript implementation of the Schnorr BIP
+# Pure JavaScript implementation of BIP340 Schnorr Signatures for secp256k1
 
 [![Build Status](https://travis-ci.org/guggero/bip-schnorr.svg?branch=master)](https://travis-ci.org/guggero/bip-schnorr)
 [![Coverage Status](https://coveralls.io/repos/github/guggero/bip-schnorr/badge.svg?branch=master)](https://coveralls.io/github/guggero/bip-schnorr?branch=master)
@@ -7,8 +7,7 @@
 [![npm version](https://badge.fury.io/js/bip-schnorr.svg)](https://badge.fury.io/js/bip-schnorr)
 
 This is a pure JavaScript implementation of the standard 64-byte Schnorr signature
-scheme over the elliptic curve *secp256k1* and its application in the
-`MuSig` [multi-signature scheme proposed by Blockstream](https://blockstream.com/2018/01/23/musig-key-aggregation-schnorr-signatures/).
+scheme over the elliptic curve *secp256k1*.
 
 The code is based upon the [BIP340 proposal](https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki).
 
