@@ -93,49 +93,7 @@ try {
 } catch (e) {
   console.error('The signature verification failed: ' + e);
 }
-
-// aggregating signatures (naive Schnorr key aggregation, not part of BIP, not safe against rogue-key-attack!)
-const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
-const privateKey2 = BigInteger.fromHex('C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7');
-const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
-const aggregatedSignature = schnorr.naiveKeyAggregation([privateKey1, privateKey2], message);
-
-// verifying an aggregated signature
-const publicKey1 = Buffer.from('02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659', 'hex');
-const publicKey2 = Buffer.from('03FAC2114C2FBB091527EB7C64ECB11F8021CB45E8E7809D3C0938E4B8C0E5F84B', 'hex');
-const sumOfPublicKeys = convert.pubKeyToPoint(publicKey1).add(convert.pubKeyToPoint(publicKey2));
-try {
-  schnorr.verify(convert.pointToBuffer(sumOfPublicKeys), message, aggregatedSignature);
-  console.log('The signature is valid.');
-} catch (e) {
-  console.error('The signature verification failed: ' + e);
-}
 ````
-
-### muSig non-interactive
-
-```javascript
-const Buffer = require('safe-buffer').Buffer; 
-const BigInteger = require('bigi');
-const schnorr = require('bip-schnorr');
-
-// muSig non-interactive (not part of any BIP yet, see https://blockstream.com/2018/01/23/musig-key-aggregation-schnorr-signatures/)
-const privateKey1 = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
-const privateKey2 = BigInteger.fromHex('C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7');
-const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
-const aggregatedSignature = schnorr.muSig.nonInteractive([privateKey1, privateKey2], message);
-
-// verifying an aggregated signature
-const publicKey1 = Buffer.from('02DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659', 'hex');
-const publicKey2 = Buffer.from('03FAC2114C2FBB091527EB7C64ECB11F8021CB45E8E7809D3C0938E4B8C0E5F84B', 'hex');
-const X = schnorr.muSig.pubKeyCombine([publicKey1, publicKey2]);
-try {
-  schnorr.verify(X, message, aggregatedSignature);
-  console.log('The signature is valid.');
-} catch (e) {
-  console.error('The signature verification failed: ' + e);
-}
-```
 
 ### muSig
 
@@ -299,24 +257,6 @@ Verify a 64-byte signature of a 32-byte message against the public key. Throws a
 
 ### schnorr.batchVerify(pubKeys : Buffer[], messages : Buffer[], signatures : Buffer[]) : void
 Verify a list of 64-byte signatures as a batch operation. Throws an `Error` if verification fails.
-
-### schnorr.naiveKeyAggregation(privateKeys : BigInteger[], message : Buffer) : Buffer
-Aggregates multiple signatures of different private keys over the same message into a single 64-byte signature.
-
-This is just a demo of how the naive Schnorr multi-signature (or key aggregation scheme) can work.  
-**This scheme is not secure,** it is prone to so-called rogue-key attacks.  
-See [Key Aggregation for Schnorr Signatures](https://blockstream.com/2018/01/23/musig-key-aggregation-schnorr-signatures/)
-by Blockstream.
-
-Use the **muSig** scheme that prevents that attack.
-
-### schnorr.muSig.nonInteractive(privateKeys : BigInteger[], message : Buffer) : Buffer
-Aggregates multiple signatures of different private keys over the same message into a single 64-byte signature
-using a scheme that is safe from rogue-key attacks.
-
-This non-interactive scheme requires the knowledge of all private keys that are participating in the
-multi-signature creation. Use the **MuSig interactive** scheme that requires multiple steps to create
-a signature with parties not sharing their private key (see below).
 
 ### schnorr.muSig.computeEll(pubKeys : Buffer[]) : Buffer
 Generate `ell` which is the hash over all public keys participating in a muSig session.
