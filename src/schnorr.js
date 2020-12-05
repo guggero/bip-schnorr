@@ -38,7 +38,7 @@ function sign(privateKey, message, aux) {
   const R = G.multiply(kPrime);
   const k = math.getEvenKey(R, kPrime);
   const Rx = convert.intToBuffer(R.affineX);
-  const e = math.bip340GetE(Rx, Px, message);
+  const e = math.getE(Rx, Px, message);
   return concat([Rx, convert.intToBuffer(k.add(e.multiply(d)).mod(n))]);
 }
 
@@ -51,7 +51,7 @@ function verify(pubKey, message, signature) {
   const r = convert.bufferToInt(signature.slice(0, 32));
   const s = convert.bufferToInt(signature.slice(32, 64));
   check.checkSignatureInput(r, s);
-  const e = math.bip340GetE(convert.intToBuffer(r), Px, message);
+  const e = math.getE(convert.intToBuffer(r), Px, message);
   const R = math.getR(s, e, P);
   if (R.curve.isInfinity(R) || !math.isEven(R) || !R.affineX.equals(r)) {
     throw new Error('signature verification failed');
@@ -70,7 +70,7 @@ function batchVerify(pubKeys, messages, signatures) {
     const r = convert.bufferToInt(signatures[i].slice(0, 32));
     const s = convert.bufferToInt(signatures[i].slice(32, 64));
     check.checkSignatureInput(r, s);
-    const e = math.bip340GetE(convert.intToBuffer(r), Px, messages[i]);
+    const e = math.getE(convert.intToBuffer(r), Px, messages[i]);
     const R = math.liftX(signatures[i].slice(0, 32));
 
     if (i === 0) {
@@ -114,7 +114,7 @@ function naiveKeyAggregation(privateKeys, message) {
   }
   const Rx = convert.intToBuffer(R.affineX);
   const Px = convert.intToBuffer(P.affineX);
-  let e = math.bip340GetE(Rx, Px, message);
+  let e = math.getE(Rx, Px, message);
   let s = zero;
   for (let i = 0; i < kPrimes.length; i++) {
     const k = math.getEvenKey(R, kPrimes[i]);

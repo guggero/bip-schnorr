@@ -37,25 +37,7 @@ function getEvenKey(pubKey, privateKey) {
   return n.subtract(privateKey);
 }
 
-function jacobi(num) {
-  return num.modPow(p.subtract(one).divide(two), p).intValue();
-}
-
-function jacobiPoint(point) {
-  const jacobiCheckInt = point.y.multiply(point.z).mod(p); // optimization over point.affineY
-  return jacobi(jacobiCheckInt);
-}
-
-function getK(R, k0) {
-  return jacobiPoint(R) === 1 ? k0 : n.subtract(k0);
-}
-
-function getE(Rx, P, m) {
-  const hash = convert.hash(concat([Rx, convert.pointToBuffer(P), m]));
-  return convert.bufferToInt(hash).mod(n);
-}
-
-function bip340GetE(Rx, Px, m) {
+function getE(Rx, Px, m) {
   const hash = taggedHash('BIP0340/challenge', concat([Rx, Px, m]));
   return convert.bufferToInt(hash).mod(n);
 }
@@ -105,10 +87,7 @@ module.exports = {
   deterministicGetK0,
   isEven,
   getEvenKey,
-  jacobi,
-  getK,
   getE,
-  bip340GetE,
   getR,
   taggedHash,
   liftX,
