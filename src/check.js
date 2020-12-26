@@ -23,13 +23,6 @@ function checkArray(name, arr) {
   }
 }
 
-function checkPubKeyArr(pubKeys) {
-  checkArray('pubKeys', pubKeys);
-  for (let i = 0; i < pubKeys.length; i++) {
-    checkBuffer('pubKey', pubKeys[i], 33, i);
-  }
-}
-
 function bip340CheckPubKeyArr(pubKeys) {
   checkArray('pubKeys', pubKeys);
   for (let i = 0; i < pubKeys.length; i++) {
@@ -51,29 +44,12 @@ function checkSignatureArr(signatures) {
   }
 }
 
-function checkNonceArr(nonces) {
-  checkArray('nonces', nonces);
-  for (let i = 0; i < nonces.length; i++) {
-    checkBuffer('nonce', nonces[i], 33, i);
-  }
-}
-
 function checkPrivateKey(privateKey, idx) {
   const idxStr = (idx !== undefined ? '[' + idx + ']' : '');
   if (!BigInteger.isBigInteger(privateKey)) {
     throw new Error('privateKey' + idxStr + ' must be a BigInteger');
   }
   checkRange('privateKey', privateKey);
-}
-
-function checkPubKeysUnique(pubKeys) {
-  const serialized = pubKeys.map(pk => pk.toString('hex'));
-  const distinct = (value, index, self) => {
-    return self.indexOf(value) === index;
-  };
-  if (pubKeys.length !== serialized.filter(distinct).length) {
-    throw new Error('pubKeys must be an array with unique elements');
-  }
 }
 
 function checkSignParams(privateKey, message) {
@@ -94,13 +70,6 @@ function checkBatchVerifyParams(pubKeys, messages, signatures) {
   if (pubKeys.length !== messages.length || messages.length !== signatures.length) {
     throw new Error('all parameters must be an array with the same length')
   }
-}
-
-function checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell) {
-  checkSignParams(privateKey, message);
-  checkBuffer('sessionId', sessionId, 32);
-  checkBuffer('pubKeyCombined', pubKeyCombined, 32);
-  checkBuffer('ell', ell, 32);
 }
 
 function checkRange(name, scalar) {
@@ -135,15 +104,11 @@ function checkAux(aux) {
 }
 
 module.exports = {
-  checkSessionParams,
   checkSignParams,
   checkVerifyParams,
   checkBatchVerifyParams,
   checkRange,
   checkSignatureInput,
   checkPointExists,
-  checkPubKeyArr,
-  checkArray,
-  checkNonceArr,
   checkAux,
 };

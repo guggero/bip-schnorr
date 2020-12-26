@@ -90,42 +90,8 @@ function batchVerify(pubKeys, messages, signatures) {
   }
 }
 
-function naiveKeyAggregation(privateKeys, message) {
-  if (!privateKeys || !privateKeys.length) {
-    throw new Error('privateKeys must be an array with one or more elements');
-  }
-  const kPrimes = [];
-  let P = null;
-  let R = null;
-  for (let privateKey of privateKeys) {
-    const PiPrime = G.multiply(privateKey);
-    const d = math.getEvenKey(PiPrime, privateKey);
-    const kPrime = math.deterministicGetK0(d, message);
-    const Ri = G.multiply(kPrime);
-    const Pi = G.multiply(privateKey);
-    kPrimes.push(kPrime);
-    if (R === null) {
-      R = Ri;
-      P = Pi;
-    } else {
-      R = R.add(Ri);
-      P = P.add(Pi);
-    }
-  }
-  const Rx = convert.intToBuffer(R.affineX);
-  const Px = convert.intToBuffer(P.affineX);
-  let e = math.getE(Rx, Px, message);
-  let s = zero;
-  for (let i = 0; i < kPrimes.length; i++) {
-    const k = math.getEvenKey(R, kPrimes[i]);
-    s = s.add(k.add(e.multiply(privateKeys[i])));
-  }
-  return concat([Rx, convert.intToBuffer(s.mod(n))]);
-}
-
 module.exports = {
   sign,
   verify,
   batchVerify,
-  naiveKeyAggregation,
 };
