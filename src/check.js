@@ -82,14 +82,8 @@ function checkBatchVerifyParams(pubKeys, messages, signatures) {
 function checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell) {
   checkSignParams(privateKey, message);
   checkBuffer('sessionId', sessionId, 32);
-  checkPoint('pubKeyCombined', pubKeyCombined);
+  checkBuffer('pubKeyCombined', pubKeyCombined, 32);
   checkBuffer('ell', ell, 32);
-}
-
-function checkPoint(name, P) {
-  if (!P.curve || P.curve.isInfinity(P)) {
-    throw new Error(name + ' must be a point on the curve')
-  }
 }
 
 function checkRange(name, scalar) {

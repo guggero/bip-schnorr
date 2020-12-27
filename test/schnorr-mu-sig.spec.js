@@ -86,6 +86,8 @@ describe('muSig', () => {
           // given
           const pubKeys = vec.pubKeys.map(pk => Buffer.from(pk, 'hex'));
           const pubKeyCombined = muSig.pubKeyCombine(pubKeys);
+          const pkBuf = convert.intToBuffer(pubKeyCombined.affineX);
+          const pkParity = math.isEven(pubKeyCombined);
           const ell = muSig.computeEll(pubKeys);
           const message = Buffer.from(vec.message, 'hex');
 
@@ -94,7 +96,7 @@ describe('muSig', () => {
             const privateKey = BigInteger.fromHex(vec.privKeys[i]);
 
             // when
-            const session = muSig.sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, i);
+            const session = muSig.sessionInitialize(sessionId, privateKey, message, pkBuf, pkParity, ell, i);
 
             // then
             assert.strictEqual(ell.toString('hex'), vec.ell);
@@ -112,6 +114,8 @@ describe('muSig', () => {
         // given
         const pubKeys = vec.pubKeys.map(pk => Buffer.from(pk, 'hex'));
         const pubKeyCombined = muSig.pubKeyCombine(pubKeys);
+        const pkBuf = convert.intToBuffer(pubKeyCombined.affineX);
+        const pkParity = math.isEven(pubKeyCombined);
         const ell = muSig.computeEll(pubKeys);
         const message = Buffer.from(vec.message, 'hex');
 
@@ -119,7 +123,7 @@ describe('muSig', () => {
         for (let i = 0; i < vec.privKeys.length; i++) {
           const sessionId = Buffer.from(vec.sessionIds[i], 'hex');
           const privateKey = BigInteger.fromHex(vec.privKeys[i]);
-          sessions[i] = muSig.sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, i);
+          sessions[i] = muSig.sessionInitialize(sessionId, privateKey, message, pkBuf, pkParity, ell, i);
         }
 
         // when
@@ -137,6 +141,8 @@ describe('muSig', () => {
         // given
         const pubKeys = vec.pubKeys.map(pk => Buffer.from(pk, 'hex'));
         const pubKeyCombined = muSig.pubKeyCombine(pubKeys);
+        const pkBuf = convert.intToBuffer(pubKeyCombined.affineX);
+        const pkParity = math.isEven(pubKeyCombined);
         const ell = muSig.computeEll(pubKeys);
         const message = Buffer.from(vec.message, 'hex');
 
@@ -144,7 +150,7 @@ describe('muSig', () => {
         for (let i = 0; i < vec.privKeys.length; i++) {
           const sessionId = Buffer.from(vec.sessionIds[i], 'hex');
           const privateKey = BigInteger.fromHex(vec.privKeys[i]);
-          sessions[i] = muSig.sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, i);
+          sessions[i] = muSig.sessionInitialize(sessionId, privateKey, message, pkBuf, pkParity, ell, i);
         }
         const signerSession = sessions[0];
         const nonceCombined = muSig.sessionNonceCombine(signerSession, sessions.map(s => s.nonce));
@@ -152,7 +158,7 @@ describe('muSig', () => {
         for (let i = 0; i < sessions.length; i++) {
           // when
           sessions[i].combinedNonceParity = signerSession.combinedNonceParity;
-          const result = muSig.partialSign(sessions[i], message, nonceCombined, pubKeyCombined);
+          const result = muSig.partialSign(sessions[i], message, nonceCombined, pkBuf);
 
           // then
           assert.strictEqual(convert.intToBuffer(result).toString('hex'), vec.partialSigs[i]);
@@ -167,6 +173,8 @@ describe('muSig', () => {
         // given
         const pubKeys = vec.pubKeys.map(pk => Buffer.from(pk, 'hex'));
         const pubKeyCombined = muSig.pubKeyCombine(pubKeys);
+        const pkBuf = convert.intToBuffer(pubKeyCombined.affineX);
+        const pkParity = math.isEven(pubKeyCombined);
         const ell = muSig.computeEll(pubKeys);
         const message = Buffer.from(vec.message, 'hex');
 
@@ -174,14 +182,14 @@ describe('muSig', () => {
         for (let i = 0; i < vec.privKeys.length; i++) {
           const sessionId = Buffer.from(vec.sessionIds[i], 'hex');
           const privateKey = BigInteger.fromHex(vec.privKeys[i]);
-          sessions[i] = muSig.sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, i);
+          sessions[i] = muSig.sessionInitialize(sessionId, privateKey, message, pkBuf, pkParity, ell, i);
         }
         const signerSession = sessions[0];
         const nonceCombined = muSig.sessionNonceCombine(signerSession, sessions.map(s => s.nonce));
 
         for (let i = 0; i < sessions.length; i++) {
           sessions[i].combinedNonceParity = signerSession.combinedNonceParity;
-          const partialSig = muSig.partialSign(sessions[i], message, nonceCombined, pubKeyCombined);
+          const partialSig = muSig.partialSign(sessions[i], message, nonceCombined, pkBuf);
 
           // when / then
           try {
@@ -200,6 +208,8 @@ describe('muSig', () => {
         // given
         const pubKeys = vec.pubKeys.map(pk => Buffer.from(pk, 'hex'));
         const pubKeyCombined = muSig.pubKeyCombine(pubKeys);
+        const pkBuf = convert.intToBuffer(pubKeyCombined.affineX);
+        const pkParity = math.isEven(pubKeyCombined);
         const ell = muSig.computeEll(pubKeys);
         const message = Buffer.from(vec.message, 'hex');
 
@@ -207,13 +217,13 @@ describe('muSig', () => {
         for (let i = 0; i < vec.privKeys.length; i++) {
           const sessionId = Buffer.from(vec.sessionIds[i], 'hex');
           const privateKey = BigInteger.fromHex(vec.privKeys[i]);
-          sessions[i] = muSig.sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, i);
+          sessions[i] = muSig.sessionInitialize(sessionId, privateKey, message, pkBuf, pkParity, ell, i);
         }
         const signerSession = sessions[0];
         const nonceCombined = muSig.sessionNonceCombine(signerSession, sessions.map(s => s.nonce));
         const partialSignatures = sessions.map(s => {
           s.combinedNonceParity = signerSession.combinedNonceParity;
-          return muSig.partialSign(s, message, nonceCombined, pubKeyCombined)
+          return muSig.partialSign(s, message, nonceCombined, pkBuf)
         });
 
         // when
@@ -237,6 +247,7 @@ describe('muSig', () => {
         message: convert.hash(Buffer.from('muSig is awesome!', 'utf8')),
         pubKeyHash: null,
         pubKeyCombined: null,
+        pubKeyParity: null,
         commitments: [],
         nonces: [],
         nonceCombined: null,
@@ -271,7 +282,9 @@ describe('muSig', () => {
       // party and then be distributed to every participant.
       // -----------------------------------------------------------------------
       publicData.pubKeyHash = muSig.computeEll(publicData.pubKeys);
-      publicData.pubKeyCombined = muSig.pubKeyCombine(publicData.pubKeys, publicData.pubKeyHash);
+      const pkCombined = muSig.pubKeyCombine(publicData.pubKeys, publicData.pubKeyHash);
+      publicData.pubKeyCombined = convert.intToBuffer(pkCombined.affineX);
+      publicData.pubKeyParity = math.isEven(pkCombined);
 
       // -----------------------------------------------------------------------
       // Step 2: Create the private signing session
@@ -286,6 +299,7 @@ describe('muSig', () => {
           data.privateKey,
           publicData.message,
           publicData.pubKeyCombined,
+          publicData.pubKeyParity,
           publicData.pubKeyHash,
           idx
         );
@@ -365,8 +379,7 @@ describe('muSig', () => {
       // The resulting signature can now be verified as a normal Schnorr
       // signature (s, R) over the message m and public key P.
       // -----------------------------------------------------------------------
-      const pkCombined = convert.intToBuffer(publicData.pubKeyCombined.affineX);
-      schnorr.verify(pkCombined, publicData.message, publicData.signature);
+      schnorr.verify(publicData.pubKeyCombined, publicData.message, publicData.signature);
     });
   });
 });

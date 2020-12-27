@@ -40,14 +40,14 @@ function pubKeyCombine(pubKeys, pubKeyHash) {
   return X;
 }
 
-function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, idx) {
+function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, pkParity, ell, idx) {
   check.checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell);
 
   const session = {
     sessionId,
     message,
     pubKeyCombined,
-    pkParity: math.isEven(pubKeyCombined),
+    pkParity,
     ell,
     idx,
   };
@@ -59,7 +59,7 @@ function sessionInitialize(sessionId, privateKey, message, pubKeyCombined, ell, 
     session.secretKey = n.subtract(session.secretKey);
   }
 
-  const nonceData = concat([sessionId, message, convert.intToBuffer(pubKeyCombined.affineX), convert.intToBuffer(privateKey)]);
+  const nonceData = concat([sessionId, message, session.pubKeyCombined, convert.intToBuffer(privateKey)]);
   session.secretNonce = convert.bufferToInt(convert.hash(nonceData));
   check.checkRange('secretNonce', session.secretNonce);
   const R = G.multiply(session.secretNonce);
@@ -80,8 +80,7 @@ function sessionNonceCombine(session, nonces) {
 }
 
 function partialSign(session, message, nonceCombined, pubKeyCombined) {
-  const Px = convert.intToBuffer(pubKeyCombined.affineX);
-  const e = math.getE(nonceCombined, Px, message);
+  const e = math.getE(nonceCombined, pubKeyCombined, message);
   const sk = session.secretKey;
   let k = session.secretNonce;
   if (session.nonceParity !== session.combinedNonceParity) {
@@ -91,8 +90,7 @@ function partialSign(session, message, nonceCombined, pubKeyCombined) {
 }
 
 function partialSigVerify(session, partialSig, nonceCombined, idx, pubKey, nonce) {
-  const Px = convert.intToBuffer(session.pubKeyCombined.affineX);
-  let e = math.getE(nonceCombined, Px, session.message);
+  let e = math.getE(nonceCombined, session.pubKeyCombined, session.message);
   const coefficient = computeCoefficient(session.ell, idx);
   const Pj = math.liftX(pubKey);
   const Ri = math.liftX(nonce);

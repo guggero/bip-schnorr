@@ -109,6 +109,7 @@ const publicData = {
   message: convert.hash(Buffer.from('muSig is awesome!', 'utf8')),
   pubKeyHash: null,
   pubKeyCombined: null,
+  pubKeyParity: null,
   commitments: [],
   nonces: [],
   nonceCombined: null,
@@ -143,7 +144,9 @@ const signerPrivateData = [
 // party and then be distributed to every participant.
 // -----------------------------------------------------------------------
 publicData.pubKeyHash = muSig.computeEll(publicData.pubKeys);
-publicData.pubKeyCombined = muSig.pubKeyCombine(publicData.pubKeys, publicData.pubKeyHash);
+const pkCombined = muSig.pubKeyCombine(publicData.pubKeys, publicData.pubKeyHash);
+publicData.pubKeyCombined = convert.intToBuffer(pkCombined.affineX);
+publicData.pubKeyParity = math.isEven(pkCombined);
 
 // -----------------------------------------------------------------------
 // Step 2: Create the private signing session
@@ -158,6 +161,7 @@ signerPrivateData.forEach((data, idx) => {
     data.privateKey,
     publicData.message,
     publicData.pubKeyCombined,
+    publicData.pubKeyParity,
     publicData.pubKeyHash,
     idx
   );
@@ -237,8 +241,7 @@ publicData.signature = muSig.partialSigCombine(publicData.nonceCombined, publicD
 // The resulting signature can now be verified as a normal Schnorr
 // signature (s, R) over the message m and public key P.
 // -----------------------------------------------------------------------
-const pkCombined = convert.intToBuffer(publicData.pubKeyCombined.affineX);
-schnorr.verify(pkCombined, publicData.message, publicData.signature);
+schnorr.verify(publicData.pubKeyCombined, publicData.message, publicData.signature);
 ```
 
 ## API
@@ -259,7 +262,7 @@ Generate `ell` which is the hash over all public keys participating in a muSig s
 Creates the special rogue-key-resistant combined public key `P` by applying the MuSig coefficient
 to each public key `P_i` before adding them together.
 
-### schnorr.muSig.sessionInitialize(sessionId : Buffer, privateKey : BigInteger, message : Buffer, pubKeyCombined : Point, ell : Buffer, idx : number) : Session
+### schnorr.muSig.sessionInitialize(sessionId : Buffer, privateKey : BigInteger, message : Buffer, pubKeyCombined : Buffer, pkParity : boolean, ell : Buffer, idx : number) : Session
 Creates a signing session. Each participant must create a session and *must not share* the content
 of the session apart from the commitment and later the nonce.
 
