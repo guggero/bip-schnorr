@@ -23,7 +23,7 @@ function checkArray(name, arr) {
   }
 }
 
-function bip340CheckPubKeyArr(pubKeys) {
+function checkPubKeyArr(pubKeys) {
   checkArray('pubKeys', pubKeys);
   for (let i = 0; i < pubKeys.length; i++) {
     checkBuffer('pubKey', pubKeys[i], 32, i);
@@ -41,6 +41,13 @@ function checkSignatureArr(signatures) {
   checkArray('signatures', signatures);
   for (let i = 0; i < signatures.length; i++) {
     checkBuffer('signature', signatures[i], 64, i);
+  }
+}
+
+function checkNonceArr(nonces) {
+  checkArray('nonces', nonces);
+  for (let i = 0; i < nonces.length; i++) {
+    checkBuffer('nonce', nonces[i], 32, i);
   }
 }
 
@@ -64,11 +71,24 @@ function checkVerifyParams(pubKey, message, signature) {
 }
 
 function checkBatchVerifyParams(pubKeys, messages, signatures) {
-  bip340CheckPubKeyArr(pubKeys);
+  checkPubKeyArr(pubKeys);
   checkMessageArr(messages);
   checkSignatureArr(signatures);
   if (pubKeys.length !== messages.length || messages.length !== signatures.length) {
     throw new Error('all parameters must be an array with the same length')
+  }
+}
+
+function checkSessionParams(sessionId, privateKey, message, pubKeyCombined, ell) {
+  checkSignParams(privateKey, message);
+  checkBuffer('sessionId', sessionId, 32);
+  checkPoint('pubKeyCombined', pubKeyCombined);
+  checkBuffer('ell', ell, 32);
+}
+
+function checkPoint(name, P) {
+  if (!P.curve || P.curve.isInfinity(P)) {
+    throw new Error(name + ' must be a point on the curve')
   }
 }
 
@@ -104,11 +124,15 @@ function checkAux(aux) {
 }
 
 module.exports = {
+  checkSessionParams,
   checkSignParams,
   checkVerifyParams,
   checkBatchVerifyParams,
   checkRange,
   checkSignatureInput,
   checkPointExists,
+  checkPubKeyArr,
+  checkArray,
+  checkNonceArr,
   checkAux,
 };
