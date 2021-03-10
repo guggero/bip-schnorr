@@ -28,7 +28,7 @@ function sign(privateKey, message, aux) {
     const rand = math.taggedHash('BIP0340/nonce', concat([t, Px, message]))
     kPrime = convert.bufferToInt(rand).mod(n);
   } else {
-    kPrime = math.deterministicGetK0(d, message);
+    kPrime = math.deterministicGetK0(d, Px, message);
   }
 
   if (kPrime.signum() === 0) {
