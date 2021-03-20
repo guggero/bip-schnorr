@@ -17,10 +17,10 @@ const three = BigInteger.valueOf(3);
 const four = BigInteger.valueOf(4);
 const seven = BigInteger.valueOf(7);
 
-function deterministicGetK0(privateKey, message) {
+function deterministicGetK0(privateKey, publicKey, message) {
   check.checkSignParams(privateKey, message);
 
-  const h = convert.hash(concat([convert.intToBuffer(privateKey), message]));
+  const h = taggedHash('BIP0340/nonce', concat([convert.intToBuffer(privateKey), publicKey, message]));
   const i = convert.bufferToInt(h);
   return i.mod(n);
 }
