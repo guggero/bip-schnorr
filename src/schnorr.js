@@ -15,6 +15,7 @@ const zero = BigInteger.ZERO;
 function sign(privateKey, message, aux) {
   // https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki#signing
   check.checkSignParams(privateKey, message);
+  privateKey = typeof (privateKey) == 'string' ? BigInteger.fromHex(privateKey) : privateKey;
 
   const P = G.multiply(privateKey);
   const Px = convert.intToBuffer(P.affineX);

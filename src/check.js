@@ -53,9 +53,17 @@ function checkNonceArr(nonces) {
 
 function checkPrivateKey(privateKey, idx) {
   const idxStr = (idx !== undefined ? '[' + idx + ']' : '');
-  if (!BigInteger.isBigInteger(privateKey)) {
-    throw new Error('privateKey' + idxStr + ' must be a BigInteger');
+  if (!BigInteger.isBigInteger(privateKey) && !(typeof privateKey == 'string')) {
+    throw new Error('privateKey' + idxStr + ' must be a BigInteger or valid hex string');
   }
+
+  if (typeof(privateKey) == 'string') {
+    if ((privateKey.match(/[^a-f^A-F^0-9]+/))) {
+      throw new Error('privateKey must be a BigInteger or valid hex string');
+    }
+    return
+  }
+
   checkRange('privateKey', privateKey);
 }
 
