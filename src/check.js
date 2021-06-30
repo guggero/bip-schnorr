@@ -58,7 +58,7 @@ function checkPrivateKey(privateKey, idx) {
   }
 
   if (typeof(privateKey) == 'string') {
-    if ((privateKey.match(/[^a-f^A-F^0-9]+/))) {
+    if (privateKey.match(/[^a-f^A-F^0-9]+/)) {
       throw new Error('privateKey must be a BigInteger or valid hex string');
     }
     return
