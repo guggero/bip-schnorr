@@ -251,7 +251,7 @@ schnorr.verify(publicData.pubKeyCombined, publicData.message, publicData.signatu
 
 ## API
 
-### schnorr.sign(privateKey : BigInteger, message : Buffer) : Buffer
+### schnorr.sign(privateKey : BigInteger | string, message : Buffer) : Buffer
 Sign a 32-byte message with the private key, returning a 64-byte signature.
 
 ### schnorr.verify(pubKey : Buffer, message : Buffer, signature : Buffer) : void
