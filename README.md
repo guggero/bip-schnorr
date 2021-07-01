@@ -49,10 +49,15 @@ const schnorr = require('bip-schnorr');
 const convert = schnorr.convert;
 
 // signing
+
+// PrivateKey as BigInteger from bigi or valid hex string
 const privateKey = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
+const privateKeyHex = 'B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF';
 const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
 const createdSignature = schnorr.sign(privateKey, message);
+const createdSignatureFromHex = schnorr.sign(privateKeyHex, message);
 console.log('The signature is: ' + createdSignature.toString('hex'));
+console.log('The signature is: ' + createdSignatureFromHex.toString('hex'));
 
 // verifying
 const publicKey = Buffer.from('DFF1D77F2A671C5F36183726DB2341BE58FEAE1DA2DECED843240F7B502BA659', 'hex');

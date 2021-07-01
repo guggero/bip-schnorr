@@ -23,7 +23,9 @@ describe('edge cases', () => {
 
   describe('sign', () => {
     it('can check sign params', () => {
-      try { schnorr.sign('foo', m); } catch (e) { assertError(e, 'privateKey must be a BigInteger'); }
+      try { schnorr.sign('foo', m); } catch (e) { assertError(e, 'privateKey must be a BigInteger or valid hex string'); }
+      try { schnorr.sign('abdcefg', m) } catch(e) { assertError(e, 'privateKey must be a BigInteger or valid hex string') };
+      try { schnorr.sign('@!$%', m) } catch(e) { assertError(e, 'privateKey must be a BigInteger or valid hex string') };
       try { schnorr.sign(BigInteger.valueOf(1), 'foo'); } catch (e) { assertError(e, 'message must be a Buffer'); }
       try { schnorr.sign(BigInteger.valueOf(1), Buffer.from([])); } catch (e) { assertError(e, 'message must be 32 bytes long'); }
       try { schnorr.sign(BigInteger.valueOf(0), m); } catch (e) { assertError(e, 'privateKey must be an integer in the range 1..n-1'); }
@@ -32,11 +34,14 @@ describe('edge cases', () => {
     });
     it('can sign example code in README', () => {
       const privateKey = BigInteger.fromHex('B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF');
+      const privateKeyHexString = 'B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF';
       const message = Buffer.from('243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89', 'hex');
       const signatureToVerify = Buffer.from('6D461BEB2F2DA00027D884FD13A24E2AE85CAECCA8AAA2D41777217EC38FB4960A67D47BC4F0722754EDB0E9017072600FFE4030C2E73771DCD3773F46A62652', 'hex');
 
       const createdSignature = schnorr.sign(privateKey, message);
+      const createdSignatureFromPrivKeyString = schnorr.sign(privateKeyHexString, message);
       assert.strictEqual(createdSignature.toString('hex'), signatureToVerify.toString('hex'));
+      assert.strictEqual(createdSignatureFromPrivKeyString.toString('hex'), signatureToVerify.toString('hex'));
     });
   });
 
