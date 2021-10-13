@@ -26,8 +26,11 @@ function taprootConstruct(pubKey, scripts) {
 function taprootTree(scripts) {
   let h = Buffer.alloc(32, 0);
   if (!scripts || scripts.length === 0) {
-    return h;
+    return new Buffer(0);
   }
+
+  // TODO(guggero): Implement script part.
+  return h;
 }
 
 module.exports = {
